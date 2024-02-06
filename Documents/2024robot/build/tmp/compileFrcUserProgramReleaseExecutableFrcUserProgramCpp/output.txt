@@ -1,0 +1,12 @@
+See file:///C:/Users/willg/Documents/2024robot/build/tmp/compileFrcUserProgramReleaseExecutableFrcUserProgramCpp/output.txt for all output for compileFrcUserProgramReleaseExecutableFrcUserProgramCpp.
+compiling RobotContainer.cpp successful.
+
+compiling ExampleCommand.cpp successful.
+
+compiling ExampleSubsystem.cpp successful.
+
+compiling Autos.cpp successful.
+
+compiling Robot.cpp successful.
+
+Finished compileFrcUserProgramReleaseExecutableFrcUserProgramCpp, see full log file:///C:/Users/willg/Documents/2024robot/build/tmp/compileFrcUserProgramReleaseExecutableFrcUserProgramCpp/output.txt.
