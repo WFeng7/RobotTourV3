@@ -1,4 +1,0 @@
-See file:///C:/Users/willg/Documents/2024robot/build/tmp/linkFrcUserProgramDebugExecutable/output.txt for all output for linkFrcUserProgramDebugExecutable.
-linking frcUserProgram successful.
-
-Finished linkFrcUserProgramDebugExecutable, see full log file:///C:/Users/willg/Documents/2024robot/build/tmp/linkFrcUserProgramDebugExecutable/output.txt.
