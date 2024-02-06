@@ -3,33 +3,65 @@
 // the WPILib BSD license file in the root directory of this project.
 
 #include "RobotContainer.h"
+#include <pathplanner/lib/auto/NamedCommands.h>
+#include <pathplanner/lib/auto/AutoBuilder.h>
+#include <pathplanner/lib/commands/PathPlannerAuto.h>
+#include <pathplanner/lib/util/ReplanningConfig.h>
+#include <frc/geometry/Pose2d.h>
+#include <frc/kinematics/ChassisSpeeds.h>
+#include <iostream>
 
-#include <frc2/command/button/Trigger.h>
 
-#include "commands/Autos.h"
-#include "commands/ExampleCommand.h"
+#include <frc/shuffleboard/Shuffleboard.h>
 
-RobotContainer::RobotContainer() {
+#include <memory>
+
+using namespace pathplanner;
+
+
+RobotContainer::RobotContainer() : m_drivetrain(){
   // Initialize all of your commands and subsystems here
 
+  
+  
+
   // Configure the button bindings
-  ConfigureBindings();
+  
+  ConfigureButtonBindings();
+  // need lambda function to capture the value of the double function for continuous data getting 
+  m_drivetrain.SetDefaultCommand(ArcadeDrive(&m_drivetrain, [this] { return -m_joystick.GetY(); }, [this] { return m_joystick.GetX(); }, [this] { return m_joystick.GetThrottle(); }));
+  // Configure the button bindings
+  
+
+  //pathplannertest
+  NamedCommands::registerCommand("marker1", frc2::cmd::Print("Passed marker 1"));
+  NamedCommands::registerCommand("marker2", frc2::cmd::Print("Passed marker 2"));
+
+  
+    // Configure the AutoBuilder last
+    
 }
 
-void RobotContainer::ConfigureBindings() {
-  // Configure your trigger bindings here
+void RobotContainer::ConfigureButtonBindings() {
+  //drivetrain
+  frc2::JoystickButton flip(&m_joystick, 8);
+  flip.OnTrue(new FlipDrivetrain(&m_drivetrain));
 
-  // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-  frc2::Trigger([this] {
-    return m_subsystem.ExampleCondition();
-  }).OnTrue(ExampleCommand(&m_subsystem).ToPtr());
 
-  // Schedule `ExampleMethodCommand` when the Xbox controller's B button is
-  // pressed, cancelling on release.
-  m_driverController.B().WhileTrue(m_subsystem.ExampleMethodCommand());
+
+  //register Autons on PathPlanner
+  exampleAuto = PathPlannerAuto("Example Auto").ToPtr().Unwrap();
+  //pieceAuto = PathPlannerAuto("pieceAuto").ToPtr().Unwrap();
+  m_chooser.SetDefaultOption("Example Auto", exampleAuto.get());
+  //m_chooser.AddOption("pieceAuto",pieceAuto.get());
+  frc::Shuffleboard::GetTab("Autonomous").Add(m_chooser).WithWidget(frc::BuiltInWidgets::kComboBoxChooser);
+
+  
+
 }
 
 frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
   // An example command will be run in autonomous
-  return autos::ExampleAuto(&m_subsystem);
+  //return m_chooser.GetSelected();
+  return PathPlannerAuto("Example Auto").ToPtr();
 }
