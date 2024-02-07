@@ -2,6 +2,7 @@
 #define Drivetrain_h
 
 #include <AccelStepper.h>
+#include <MultiStepper.h>
 #include <MPU9250.h>
 #include "Constants.h"
 
@@ -9,15 +10,12 @@ class Drivetrain {
     private: 
         AccelStepper x1, x2, y1, y2;
         MPU9250 mpu;
-        bool rotated;
+        int orientation = 0;
     public:
         Drivetrain(AccelStepper* x1, AccelStepper* x2, AccelStepper* y1, AccelStepper* y2, MPU9250* mpu);
-        void set(double x1speed, double x2speed, double y1speed, double y2speed);
-        void driveDistance(double distance);
-        void update();
-        void drive(double speed, bool horizontal);
-        void turnSpeed(double speed);
-        void turn(double angle);
+        void set(double speed);
+        void driveDistance(double dist, double speed, bool horizontal);
+        void turn(int angle, double speed);
         void stop();
 
 };
