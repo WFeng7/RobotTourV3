@@ -15,7 +15,7 @@ void Drivetrain::set(double speed) { // steps per second
     y2.setSpeed(speed);
 }
 
-void Drivetrain::driveDistance(double dist, double speed, bool horizontal) { 
+void Drivetrain::driveDistance(double dist, double speed, bool horizontal) { // TO-DO: CONVERT DIST TO STEPS
     MultiStepper multi;
     orientation = (orientation + 360) % 360;
     if(horizontal && (orientation % 180 == 0) || !horizontal && (orientation % 180 != 0)) {
@@ -40,7 +40,7 @@ void Drivetrain::driveDistance(double dist, double speed, bool horizontal) {
 
 void Drivetrain::turn(int angle, double speed) {
     MultiStepper multi;
-    double dist = (angle * 2 * PI) / 360 * Constants::ROBOT_RADIUS/4;
+    double dist = (angle * 2 * PI) / 360 * Constants::ROBOT_RADIUS/4; // TO-DO: CONVERT DIST TO STEPS
     x1.move(dist);
     x2.move(dist);
     y1.move(dist);
