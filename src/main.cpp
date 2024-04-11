@@ -2,7 +2,7 @@
 
 #include <AccelStepper.h>
 #include <MultiStepper.h>
-#include <MPU9250.h>
+// #include <MPU9250.h>
 
 #include "Drivetrain.h"
 #include "Constants.h"
@@ -32,13 +32,11 @@
 // Global Variables
 
 AccelStepper x1, x2, y1, y2; // Stepper Motors
-MPU9250 mpu;
 Drivetrain drivetrain;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  Wire.begin();
   delay(2000);
   
   x1 = AccelStepper(AccelStepper::FULL4WIRE, X1_PIN1, X1_PIN2, X1_PIN3, X1_PIN4, true);
@@ -46,17 +44,17 @@ void setup() {
   y1 = AccelStepper(AccelStepper::FULL4WIRE, Y1_PIN1, Y1_PIN2, Y1_PIN3, Y1_PIN4, true);
   y2 = AccelStepper(AccelStepper::FULL4WIRE, Y2_PIN1, Y2_PIN2, Y2_PIN3, Y2_PIN4, true);
 
-  if (!mpu.setup(0x68)) {  // change to your own address
-    while (1) {
-      Serial.println("MPU connection failed. Please check your connection with `connection_check` example.");
-      delay(5000);
-    }
-  }
+  // if (!mpu.setup(0x68)) {  // change to your own address
+  //   while (1) {
+  //     Serial.println("MPU connection failed. Please check your connection with `connection_check` example.");
+  //     delay(5000);
+  //   }
+  // }
 
-  mpu.calibrateAccelGyro();
-  mpu.calibrateMag();
+  // mpu.calibrateAccelGyro();
+  // mpu.calibrateMag();
 
-  drivetrain = Drivetrain(&x1, &x2, &y1, &y2, &mpu);
+  drivetrain = Drivetrain(&x1, &x2, &y1, &y2);
 
 }
 

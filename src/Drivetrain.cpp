@@ -1,12 +1,11 @@
 #include <Arduino.h>
 #include "Drivetrain.h"
 
-Drivetrain::Drivetrain(AccelStepper* x1, AccelStepper* x2, AccelStepper* y1, AccelStepper* y2, MPU9250* mpu):
+Drivetrain::Drivetrain(AccelStepper* x1, AccelStepper* x2, AccelStepper* y1, AccelStepper* y2):
     x1(*x1),
     x2(*x2),
     y1(*y1),
-    y2(*y2),
-    mpu(*mpu) {}
+    y2(*y2) {}
 
 void Drivetrain::set(double speed) { // steps per second
     x1.setSpeed(speed);
@@ -15,8 +14,9 @@ void Drivetrain::set(double speed) { // steps per second
     y2.setSpeed(speed);
 }
 
-void Drivetrain::driveDistance(double dist, double speed, bool horizontal) { // TO-DO: CONVERT DIST TO STEPS
+void Drivetrain::driveDistance(double pdist, double speed, bool horizontal) { // TO-DO: CONVERT DIST TO STEPS
     MultiStepper multi;
+    int dist = (int)((pdist)/(PI * Constants::WHEEL_DIAMETER) * 200);
     orientation = (orientation + 360) % 360;
     if(horizontal && (orientation % 180 == 0) || !horizontal && (orientation % 180 != 0)) {
         x1.move((orientation == 180 || orientation == 270 ? -1 : 1) * dist);
@@ -40,18 +40,22 @@ void Drivetrain::driveDistance(double dist, double speed, bool horizontal) { // 
 
 void Drivetrain::turn(int angle, double speed) {
     MultiStepper multi;
-    double dist = (angle * 2 * PI) / 360 * Constants::ROBOT_RADIUS/4; // TO-DO: CONVERT DIST TO STEPS
-    x1.move(dist);
-    x2.move(dist);
-    y1.move(dist);
-    y2.move(dist);
+    int dist = 10 * angle/18; // TO-DO: CONVERT DIST TO STEPS
     if(angle > 0) {
+        x1.move(dist);
+        x2.move(dist);
+        y1.move(dist);
+        y2.move(dist);
         x1.setSpeed(speed);
         x2.setSpeed(speed);
         y1.setSpeed(speed);
         y2.setSpeed(speed);
     }
     else {
+        x1.move(-dist);
+        x2.move(-dist);
+        y1.move(-dist);
+        y2.move(-dist);
         x1.setSpeed(-speed);
         x2.setSpeed(-speed);
         y1.setSpeed(-speed);
