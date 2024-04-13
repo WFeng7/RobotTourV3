@@ -35,7 +35,7 @@ void Drivetrain::driveDistance(double pdist, double speed, bool horizontal) { //
         multi.runSpeedToPosition();
     }
     else {
-        digitalWrite(SLEEP2, HIGH);
+        digitalWrite(SLEEP1, HIGH);
         y_stepper1.move((orientation == 180 || orientation == 270 ? -1 : 1) * dist);
         y_stepper2.move((orientation == 0 || orientation == 90 ? -1 : 1) * dist);
         y_stepper1.setMaxSpeed(1000);
@@ -46,7 +46,7 @@ void Drivetrain::driveDistance(double pdist, double speed, bool horizontal) { //
         multi.addStepper(y_stepper2);
         multi.runSpeedToPosition();
     }
-    delay(5);
+    delay(250);
     stepperSleep();
 }
 
@@ -88,7 +88,7 @@ void Drivetrain::turn(int angle, double speed) {
     multi.addStepper(y_stepper1);
     multi.addStepper(y_stepper2);
     multi.runSpeedToPosition();
-    delay(1000);
+    delay(250);
     stepperSleep();
     orientation = (orientation + (int)angle + 360) % 360;
 }

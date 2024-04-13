@@ -4,6 +4,7 @@
 #include <MultiStepper.h>
 #include <string.h>
 #include <iostream>
+#include <fstream>
 // #include <MPU9250.h>
 
 #include "Drivetrain.h"
@@ -76,23 +77,26 @@ void setup() {
 }
 
 void test() {
-  // drivetrain.driveDistance(25, 400, true);
-  drivetrain.turn(90, 400);
+  drivetrain.driveDistance(175, 150, true);
+  drivetrain.driveDistance(150, 150, false);
+
 }
 
 // void test() {
 //   freopen("instructions.txt", "r", stdin);
 //   std::string str;
-//   while(getline(std::cin, str)) {
+//   while(!std::cin.eof()) {
+//     char c; std::cin >> c; int val; std::cin >> val;
+//     Serial.println(c + " " + val);
 //     delay(500);
-//     if(str[0] == 'v') {
-//       drivetrain.driveDistance((str[1] - '0') * 25, 400, false);
+//     if(c == 'v') {
+//       drivetrain.driveDistance(val * 25, 150, false);
 //     }
-//     else if(str[0] == 'h') {
-//       drivetrain.driveDistance((str[1] - '0') * 25, 400, true);
+//     else if(c == 'h') {
+//       drivetrain.driveDistance(val * 25, 150, true);
 //     }
 //     else {
-//       drivetrain.turn(, 400)
+//       drivetrain.turn(val, 150);
 //     }
 //   }  
 // }
