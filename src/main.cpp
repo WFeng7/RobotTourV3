@@ -12,16 +12,16 @@
 
 // Pins
 
-#define X1_STEP 19
+#define X1_STEP 4 // motor 4
 #define X1_DIR 18
 
-#define X2_STEP 4
+#define X2_STEP 4 // motor 2
 #define X2_DIR 15
 
-#define Y1_STEP 33
+#define Y1_STEP 4 // motor 1
 #define Y1_DIR 32
 
-#define Y2_STEP 26
+#define Y2_STEP 4 // motor 3
 #define Y2_DIR 25
 
 #define motorInterfaceType 1
@@ -77,9 +77,9 @@ void setup() {
 }
 
 void test() {
-  drivetrain.driveDistance(175, 150, true);
-  drivetrain.driveDistance(150, 150, false);
-
+  drivetrain.driveDistance(50, false);
+  drivetrain.turn(180);
+  drivetrain.driveDistance(50, false);
 }
 
 // void test() {

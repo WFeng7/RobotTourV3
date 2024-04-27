@@ -14,8 +14,8 @@ class Drivetrain {
         Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, AccelStepper* y_stepper1, AccelStepper* y_stepper2);
         void stepperSleep();
         // void set(double speed);
-        void driveDistance(double dist, double speed, bool horizontal);
-        void turn(int angle, double speed);
+        void driveDistance(double dist, bool horizontal);
+        void turn(int angle);
         void stop();
 
 };
