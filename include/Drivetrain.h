@@ -17,6 +17,8 @@ class Drivetrain {
         void driveDistance(double dist, bool horizontal);
         void turn(int angle);
         void stop();
+        void driveTiles(double tiles, bool horizontal);
+        void resetOrientation();
 
 };
 
