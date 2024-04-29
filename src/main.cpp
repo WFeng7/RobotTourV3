@@ -87,38 +87,24 @@ void setup() {
   
 }
 
-std::vector<std::string> split(const std::string& s, char c) {
-  std::vector<std::string> result;
-  size_t begin = 0;
-  while (true) {
-    size_t end = s.find_first_of(c, begin);
-    result.push_back(s.substr(begin, end - begin));
-
-    if (end == std::string::npos) {
-      break;
-    }
-  
-    begin = end + 1;
-  }
-  return result;
-}
-
 void test() {
-  String command = Serial.readStringUntil('\n');
+  std::string command = Serial.readStringUntil('\n').c_str();
 
   while (command == "") {
-    command = Serial.readStringUntil('\n');
+    command = Serial.readStringUntil('\n').c_str();
   }
 
-  Serial.println("Executing: " + command);
+  Serial.println("Executing: " + String(command.c_str()));
 
-  std::vector<std::string> commands = split(command.c_str(), ' ');
-  if (commands[0] == "x") {
-    drivetrain.driveDistance(std::stoi(commands[1]), false);
-  } else if (commands[0] == "y") {
-    drivetrain.driveDistance(std::stoi(commands[1]), true);
-  } else if (commands[0] == "turn") {
-    drivetrain.turn(std::stoi(commands[1]));
+  // std::vector<std::string> commands = split(command.c_str(), ' ');
+  if (command[0] == 'x') {
+    drivetrain.driveDistance(std::stoi(command.substr(2)), false);
+  } 
+  else if (command[0] == 'y') {
+    drivetrain.driveDistance(std::stoi(command.substr(2)), true);
+  } 
+  else if (command[0] == 't') {
+    drivetrain.turn(std::stoi(command.substr(2)));
   }
   else {
     Serial.println("Invalid command");
