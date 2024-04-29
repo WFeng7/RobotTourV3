@@ -5,6 +5,8 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <vector>
 // #include <MPU9250.h>
 
 #include "Drivetrain.h"
@@ -41,10 +43,10 @@ int buttonState;
 unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
 
-AccelStepper x_stepper1 = AccelStepper(motorInterfaceType, X1_STEP, X1_DIR);
-AccelStepper x_stepper2 = AccelStepper(motorInterfaceType, X2_STEP, X2_DIR);
-AccelStepper y_stepper1 = AccelStepper(motorInterfaceType, Y1_STEP, Y1_DIR);
-AccelStepper y_stepper2 = AccelStepper(motorInterfaceType, Y2_STEP, Y2_DIR);
+AccelStepper x_stepper1 = AccelStepper(motorInterfaceType, X1_STEP, 2);
+AccelStepper x_stepper2 = AccelStepper(motorInterfaceType, X2_STEP, 2);
+AccelStepper y_stepper1 = AccelStepper(motorInterfaceType, Y1_STEP, 2);
+AccelStepper y_stepper2 = AccelStepper(motorInterfaceType, Y2_STEP, 2);
 
 Drivetrain drivetrain = Drivetrain(&x_stepper1, &x_stepper2, &y_stepper1, &y_stepper2);
 
@@ -67,6 +69,15 @@ void setup() {
   digitalWrite(SLEEP1, LOW);
   digitalWrite(SLEEP2, LOW);
 
+  pinMode(X1_STEP, OUTPUT);
+  pinMode(X1_DIR, OUTPUT);
+  pinMode(X2_STEP, OUTPUT);
+  pinMode(X2_DIR, OUTPUT);
+  pinMode(Y1_STEP, OUTPUT);
+  pinMode(Y1_DIR, OUTPUT);
+  pinMode(Y2_STEP, OUTPUT);
+  pinMode(Y2_DIR, OUTPUT);
+
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   // y_stepper1.setMaxSpeed(1000);
   // y_stepper1.setSpeed(300);
@@ -76,10 +87,42 @@ void setup() {
   
 }
 
+std::vector<std::string> split(const std::string& s, char c) {
+  std::vector<std::string> result;
+  size_t begin = 0;
+  while (true) {
+    size_t end = s.find_first_of(c, begin);
+    result.push_back(s.substr(begin, end - begin));
+
+    if (end == std::string::npos) {
+      break;
+    }
+  
+    begin = end + 1;
+  }
+  return result;
+}
+
 void test() {
-  drivetrain.driveDistance(50, false);
-  drivetrain.turn(180);
-  drivetrain.driveDistance(50, false);
+  String command = Serial.readStringUntil('\n');
+
+  while (command == "") {
+    command = Serial.readStringUntil('\n');
+  }
+
+  Serial.println("Executing: " + command);
+
+  std::vector<std::string> commands = split(command.c_str(), ' ');
+  if (commands[0] == "x") {
+    drivetrain.driveDistance(std::stoi(commands[1]), false);
+  } else if (commands[0] == "y") {
+    drivetrain.driveDistance(std::stoi(commands[1]), true);
+  } else if (commands[0] == "turn") {
+    drivetrain.turn(std::stoi(commands[1]));
+  }
+  else {
+    Serial.println("Invalid command");
+  }
 }
 
 // void test() {
@@ -102,13 +145,13 @@ void test() {
 // }
 
 void loop() {
-  Serial.println("Loop");
-  int reading = digitalRead(BUTTON_PIN);
+  // Serial.println("Loop");
+  // int reading = digitalRead(BUTTON_PIN);
 
-  if(reading == LOW) {
-    Serial.print("OK");
-    delay(2000);
-    test();
-  }
-
+  // if(reading == LOW) {
+  //   Serial.print("OK");
+  //   delay(2000);
+  //   test();
+  // }
+  test();
 }
