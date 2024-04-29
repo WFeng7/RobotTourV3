@@ -56,7 +56,7 @@ void Drivetrain::driveDistance(double pdist, bool horizontal) { // TO-DO: CONVER
         // x_stepper2.setSpeed(speed);
         // multi.addStepper(x_stepper1);
         // multi.addStepper(x_stepper2);
-        x_stepper1.runToPosition()
+        x_stepper1.runToPosition();
     }
     else {
         digitalWrite(SLEEP1, HIGH);
