@@ -147,9 +147,11 @@ void test() {
 }
 
 void run() {
-  drivetrain.driveTiles(3, false);
-  drivetrain.driveTiles(3, true);
+  // drivetrain.driveTiles(3, false);
+  // drivetrain.driveTiles(3, true);
+  // drivetrain.turn(180);
   drivetrain.turn(90);
+  drivetrain.turn(-90);
 }
 
 void loop() {
