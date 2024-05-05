@@ -31,6 +31,8 @@
 #define SLEEP1 21
 #define SLEEP2 23
 
+#define MICROSTEP 14
+
 #define BUTTON_PIN 13
 
 // Global Variables
@@ -66,8 +68,10 @@ void setup() {
   // mpu.calibrateMag();
   pinMode(SLEEP1, OUTPUT);
   pinMode(SLEEP2, OUTPUT);
+  pinMode(MICROSTEP, OUTPUT);
   digitalWrite(SLEEP1, LOW);
   digitalWrite(SLEEP2, LOW);
+  digitalWrite(MICROSTEP, LOW);
 
   pinMode(X1_STEP, OUTPUT);
   pinMode(X1_DIR, OUTPUT);
@@ -104,46 +108,17 @@ std::vector<std::string> split(const std::string& s, char c) {
 }
 
 void test() {
-  Serial.println("Enter command: ");
-  String command = Serial.readStringUntil('\n');
+  // Serial.println("Enter command: ");
+  // String command = Serial.readStringUntil('\n');
 
-  while (command == "") {
-    command = Serial.readStringUntil('\n');
-  }
-
-  Serial.println("Executing: " + command);
-
-  std::vector<std::string> commands = split(command.c_str(), ' ');
-  // if (commands[0] == "x") {
-  //   drivetrain.driveTiles(std::stoi(commands[1]), false);
-  // } else if (commands[0] == "y") {
-  //   drivetrain.driveTiles(std::stoi(commands[1]), true);
-  // } else if (commands[0] == "turn") {
-  //   drivetrain.turn(std::stoi(commands[1]));
-  // } else if (commands[0] == "xd") {
-  //   drivetrain.driveDistance(std::stoi(commands[1]), false);
-  // } else if (commands[0] == "yd") {
-  //   drivetrain.driveDistance(std::stoi(commands[1]), true);
-  // }
-  // else {
-  //   Serial.println("Invalid command");
+  // while (command == "") {
+  //   command = Serial.readStringUntil('\n');
   // }
 
-  if (commands[0] == "x1" || commands[0] == "x2") {
-    x_stepper1.move(500);
-    x_stepper1.setMaxSpeed(1000);
-    x_stepper1.setAcceleration(600);
-    x_stepper1.runToPosition();
-  }
-  else if (commands[0] == "y1" || commands[0] == "y2") {
-    y_stepper1.move(500);
-    y_stepper1.setMaxSpeed(1000);
-    y_stepper1.setAcceleration(600);
-    y_stepper1.runToPosition();
-  }
-  else {
-    Serial.println("Invalid command");
-  }
+  // Serial.println("Executing: " + command);
+
+  // drivetrain.setRobotDiameter(command.toDouble());
+  // drivetrain.turn(90);
 }
 
 void run() {
@@ -151,7 +126,6 @@ void run() {
   // drivetrain.driveTiles(3, true);
   // drivetrain.turn(180);
   drivetrain.turn(90);
-  drivetrain.turn(-90);
 }
 
 void loop() {

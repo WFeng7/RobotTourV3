@@ -19,7 +19,7 @@
 #define SLEEP2 23
 
 #define WHEELDIAMETER 7.2
-#define ROBOTDIAMETER 22.4
+#define ROBOTDIAMETER 21.15
 #define TILE_LENGTH 50
 
 #define MAXSPEED 1000
@@ -31,6 +31,8 @@
 #define NOMINAL_SPEED 800
 #define NOMINAL_ACCELERATION 400
 
+#define MICROSTEP 14
+
 Drivetrain::Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, AccelStepper* y_stepper1, AccelStepper* y_stepper2):
     x_stepper1(*x_stepper1),
     x_stepper2(*x_stepper2),
@@ -38,13 +40,14 @@ Drivetrain::Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, Accel
     y_stepper2(*y_stepper2) {}
 
 void Drivetrain::stepperSleep() {
+    digitalWrite(MICROSTEP, LOW);
     digitalWrite(SLEEP1, LOW);
     digitalWrite(SLEEP2, LOW);
 }
 
 void Drivetrain::driveDistance(double pdist, bool horizontal) { // TO-DO: CONVERT DIST TO STEPS
     MultiStepper multi;
-    int dist = (int)(pdist * 200 / (PI * WHEELDIAMETER));
+    int dist = (int)(pdist * stepsPerRev / (PI * WHEELDIAMETER));
     if(horizontal && (orientation % 180 == 0) || !horizontal && (orientation % 180 != 0)) {
         digitalWrite(SLEEP2, HIGH);
         // digitalWrite(SLEEP1, HIGH);
@@ -111,12 +114,15 @@ void Drivetrain::driveTiles(double tiles, bool horizontal) {
 
 void Drivetrain::turn(int angle) {
     // MultiStepper multi;
-    int dist = (int)(200 * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER)); // TO-DO: CONVERT DIST TO STEPS
+    double full_dist = (stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER));
+    int dist = (int)(stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER)); // TO-DO: CONVERT DIST TO STEPS
+    int microstep_dist = (int)((full_dist - dist) * microstepMultiplier);
+
     digitalWrite(SLEEP1, HIGH);
     digitalWrite(SLEEP2, HIGH);
     x_stepper1.move(dist);
     y_stepper1.move(dist);
-    if(dist > 0) {
+    if(full_dist > 0) {
         digitalWrite(X1_DIR, HIGH);
         digitalWrite(X2_DIR, HIGH);
         digitalWrite(Y1_DIR, HIGH);
@@ -132,17 +138,35 @@ void Drivetrain::turn(int angle) {
     y_stepper1.setMaxSpeed(NOMINAL_SPEED);
     x_stepper1.setAcceleration(NOMINAL_ACCELERATION);
     y_stepper1.setAcceleration(NOMINAL_ACCELERATION);
+    Serial.println("FULL STEP");
     while (x_stepper1.distanceToGo() != 0 || y_stepper1.distanceToGo() != 0) {
         x_stepper1.run();
         y_stepper1.run();
     }
+    Serial.println("MICROSTEP");
+    setMicrostep(true);
+    x_stepper1.move(microstep_dist);
+    y_stepper1.move(microstep_dist);
+    while (x_stepper1.distanceToGo() != 0 || y_stepper1.distanceToGo() != 0) {
+        x_stepper1.run();
+        y_stepper1.run();
+    }
+    setMicrostep(false);
     delay(250);
     stepperSleep();
-    orientation = (orientation + (int)angle + 360) % 360;
 }
 
 void Drivetrain::resetOrientation() {
     orientation = 0;
+}
+
+void Drivetrain::setMicrostep(bool state) {
+    if (state) {
+        digitalWrite(MICROSTEP, HIGH);
+    }
+    else {
+        digitalWrite(MICROSTEP, LOW);
+    }
 }
 
 void Drivetrain::stop() {
