@@ -123,7 +123,7 @@ void findPath() {
     tt = vis[tt.first][tt.second];
   }
   short a, b, c, d;
-  short dist = 25;
+  short dist = 36;
   short dir = 0, ndir = 0; // 0 up 1 right 2 down 3 left
   for(short i = coords.size() - 2; i >= 0; i--) {
     a = coords[i + 1] / N;
@@ -143,8 +143,8 @@ void findPath() {
       ndir = 3;
     } 
     if(dir != ndir) {
-      path.push_back("t" + dist);
-      dist = 0;
+      path.push_back("t" + std::to_string(dist));
+      dist = 50;
       if(ndir - dir == 1 || ndir - dir == -3) {
         path.push_back("r");
       }
@@ -155,7 +155,14 @@ void findPath() {
         path.push_back("l");
         path.push_back("l");
       }
+      dir = ndir;
     }
+    else {
+      dist += 50;
+    }
+  }
+  if(dist != 0) {
+    path.push_back("t" + std::to_string(dist));
   }
 }
 
