@@ -119,13 +119,14 @@ void test() {
 
   Serial.println("Executing: " + command);
 
-  drivetrain.turn(commands[0], commands[1]);
+  int x = std::stoi(commands[0]);
+  double y = std::stod(commands[1]);
+
+  drivetrain.turn(x, y);
 }
 
 void run() {
-  // drivetrain.driveTiles(3, false);
-  // drivetrain.driveTiles(3, true);
-  // drivetrain.turn(180);
+  
 }
 
 void loop() {

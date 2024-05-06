@@ -155,12 +155,12 @@ void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
         y_stepper1.run();
     }
     setMicrostep(false);
-    // delay(250);
+    delay(250);
     stepperSleep();
 }
 
 void Drivetrain::turnRight() {
-    turn(90, 20);
+    turn(90, 19.8);
 }
 
 void Drivetrain::turnLeft() {
@@ -168,7 +168,7 @@ void Drivetrain::turnLeft() {
 }
 
 void Drivetrain::turnAround() {
-    turn(180, 20);
+    turn(180, 19.7);
 }
 
 void Drivetrain::resetOrientation() {
