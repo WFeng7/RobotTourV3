@@ -19,14 +19,14 @@
 #define SLEEP2 23
 
 #define WHEELDIAMETER 7.2
-#define ROBOTDIAMETER 19.5
+// #define ROBOTDIAMETER 20
 #define TILE_LENGTH 50
 
 #define MAXSPEED 1000
 #define MAXACCELERATION 600
 
-#define MAXTURNSPEED 500
-#define MAXTURNACCELERATION 300
+#define MAXTURNSPEED 875
+#define MAXTURNACCELERATION 625
 
 // #define NOMINAL_SPEED 800
 // #define NOMINAL_ACCELERATION 400
@@ -107,7 +107,7 @@ void Drivetrain::driveDistance(double pdist, bool horizontal) { // TO-DO: CONVER
         // multi.runSpeedToPosition();
         y_stepper1.runToPosition();
     }
-    delay(250);
+    // delay(250);
     stepperSleep();
 }
 
@@ -115,7 +115,7 @@ void Drivetrain::driveTiles(double tiles, bool horizontal) {
     driveDistance(tiles * TILE_LENGTH, horizontal);
 }
 
-void Drivetrain::turn(int angle) {
+void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
     // MultiStepper multi;
     double full_dist = (stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER));
     int dist = (int)(stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER)); // TO-DO: CONVERT DIST TO STEPS
@@ -137,26 +137,38 @@ void Drivetrain::turn(int angle) {
         digitalWrite(Y1_DIR, LOW);
         digitalWrite(Y2_DIR, LOW);
     }
-    x_stepper1.setMaxSpeed(NOMINAL_SPEED);
-    y_stepper1.setMaxSpeed(NOMINAL_SPEED);
-    x_stepper1.setAcceleration(NOMINAL_ACCELERATION);
-    y_stepper1.setAcceleration(NOMINAL_ACCELERATION);
+    x_stepper1.setMaxSpeed(MAXTURNSPEED);
+    y_stepper1.setMaxSpeed(MAXTURNSPEED);
+    x_stepper1.setAcceleration(MAXTURNACCELERATION);
+    y_stepper1.setAcceleration(MAXTURNACCELERATION );
     Serial.println("FULL STEP");
-    while (x_stepper1.distanceToGo() != 0 || y_stepper1.distanceToGo() != 0) {
-        x_stepper1.run();
+    while (y_stepper1.distanceToGo() != 0) {
+        // x_stepper1.run();
         y_stepper1.run();
     }
     Serial.println("MICROSTEP");
     setMicrostep(true);
     x_stepper1.move(microstep_dist);
     y_stepper1.move(microstep_dist);
-    while (x_stepper1.distanceToGo() != 0 || y_stepper1.distanceToGo() != 0) {
-        x_stepper1.run();
+    while (y_stepper1.distanceToGo() != 0) {
+        // x_stepper1.run();
         y_stepper1.run();
     }
     setMicrostep(false);
-    delay(250);
+    // delay(250);
     stepperSleep();
+}
+
+void Drivetrain::turnRight() {
+    turn(90, 20);
+}
+
+void Drivetrain::turnLeft() {
+    turn(-90, 20);
+}
+
+void Drivetrain::turnAround() {
+    turn(180, 20);
 }
 
 void Drivetrain::resetOrientation() {

@@ -17,11 +17,14 @@ class Drivetrain {
         void stepperSleep();
         // void set(double speed);
         void driveDistance(double dist, bool horizontal);
-        void turn(int angle);
+        void turn(int angle, double ROBOTDIAMETER);
         void stop();
         void driveTiles(double tiles, bool horizontal);
         void resetOrientation();
         void setMicrostep(bool state);
+        void turnRight();
+        void turnLeft();
+        void turnAround();
 };
 
 #endif

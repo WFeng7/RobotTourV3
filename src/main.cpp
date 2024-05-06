@@ -108,31 +108,24 @@ std::vector<std::string> split(const std::string& s, char c) {
 }
 
 void test() {
-  // Serial.println("Enter command: ");
-  // String command = Serial.readStringUntil('\n');
+  Serial.println("Enter command: ");
+  String command = Serial.readStringUntil('\n');
 
-  // while (command == "") {
-  //   command = Serial.readStringUntil('\n');
-  // }
+  while (command == "") {
+    command = Serial.readStringUntil('\n');
+  }
 
-  // Serial.println("Executing: " + command);
+  std::vector<std::string> commands = split(command.c_str(), ' ');
 
-  // drivetrain.setRobotDiameter(command.toDouble());
-  // drivetrain.turn(90);
+  Serial.println("Executing: " + command);
+
+  drivetrain.turn(commands[0], commands[1]);
 }
 
 void run() {
   // drivetrain.driveTiles(3, false);
   // drivetrain.driveTiles(3, true);
   // drivetrain.turn(180);
-  drivetrain.driveTiles(3, false);
-  drivetrain.turn(90);
-  drivetrain.driveTiles(3, false);
-  drivetrain.turn(90);
-  drivetrain.driveTiles(3, false);
-  drivetrain.turn(90);
-  drivetrain.driveTiles(3, false);
-  drivetrain.turn(180);
 }
 
 void loop() {
