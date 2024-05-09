@@ -37,9 +37,13 @@
 
 #define BUTTON_PIN 13
 
+#define IMU_INTERRUPT 34
+
 // Global Variables
 
 int t = 0;
+
+const signed char orientationDefault[9] = {0, 1, 0, 0, 0, 1, 1, 0, 0};
 
 int lastButtonState = HIGH;
 int buttonState;
@@ -229,18 +233,25 @@ void setup() {
   pinMode(Y2_DIR, OUTPUT);
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(IMU_INTERRUPT, INPUT_PULLUP);
 
   while (drivetrain.imu.begin() != INV_SUCCESS) {
-    // Serial.println("Failed to initialize IMU!");
+    Serial.println("Failed to initialize IMU!");
     delay(1000);
   }
 
-  drivetrain.imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
-  drivetrain.imu.setGyroFSR(2000);
-  drivetrain.imu.setAccelFSR(2);
-  drivetrain.imu.setLPF(5);
-  drivetrain.imu.setSampleRate(10);
-  drivetrain.imu.setCompassSampleRate(10);
+  drivetrain.imu.enableInterrupt();
+  drivetrain.imu.setIntLevel(INT_ACTIVE_LOW);
+  drivetrain.imu.setIntLatched(INT_LATCHED);
+  drivetrain.imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_GYRO_CAL, 10);
+  drivetrain.imu.dmpSetOrientation(orientationDefault);
+
+  // drivetrain.imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
+  // drivetrain.imu.setGyroFSR(2000);
+  // drivetrain.imu.setAccelFSR(2);
+  // drivetrain.imu.setLPF(5);
+  // drivetrain.imu.setSampleRate(10);
+  // drivetrain.imu.setCompassSampleRate(10);
 
   // drivetrain.createMutex();
   // xTaskCreatePinnedToCore(sensorTask, "SensorTask", 10000, NULL, 1, &drivetrain.sensorTaskHandle, 1);

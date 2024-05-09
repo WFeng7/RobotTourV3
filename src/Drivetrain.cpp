@@ -36,6 +36,8 @@
 
 #define MICROSTEP 14
 
+#define IMU_INTERRUPT 34
+
 Drivetrain::Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, AccelStepper* y_stepper1, AccelStepper* y_stepper2):
     x_stepper1(*x_stepper1),
     x_stepper2(*x_stepper2),
@@ -120,28 +122,30 @@ void Drivetrain::driveTiles(double tiles, bool horizontal) {
 }
 
 void Drivetrain::updateYaw() {
-    // xSemaphoreTake(yawMutex, portMAX_DELAY);
-    // float yaw = sharedYaw;
-    // xSemaphoreGive(yawMutex);
-    
-    if (imu.dataReady()) {
-      imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
 
-      float ax = imu.calcAccel(imu.ax);
-      float ay = imu.calcAccel(imu.ay);
-      float az = imu.calcAccel(imu.az);
-      float gx = imu.calcGyro(imu.gx);
-      float gy = imu.calcGyro(imu.gy);
-      float gz = imu.calcGyro(imu.gz);
-      float mx = imu.calcMag(imu.mx);
-      float my = imu.calcMag(imu.my);
-      float mz = imu.calcMag(imu.mz);
+    if (digitalRead(IMU_INTERRUPT) == LOW) {
+        unsigned short fifoCnt = imu.fifoAvailable();
 
-      filter.update(gx, gy, gz, ax, ay, az, mx, my, mz);
-      
-    //   xSemaphoreTake(drivetrain.yawMutex, portMAX_DELAY);
-      sharedYaw = filter.getYawRadians() * 180 / PI;
-    //   xSemaphoreGive(drivetrain.yawMutex);
+        if (fifoCnt > 0) {
+            inv_error_t result = imu.dmpUpdateFifo();
+            
+            if (result == INV_SUCCESS) {
+                imu.computeEulerAngles();
+
+                float w = imu.calcQuat(imu.qw);
+                float x = imu.calcQuat(imu.qx);
+                float y = imu.calcQuat(imu.qy);
+                float z = imu.calcQuat(imu.qz);
+
+                rotation.w = w;
+                rotation.x = x;
+                rotation.y = y;
+                rotation.z = z;
+
+                Euler angles = rotation.toEuler();
+                sharedYaw = angles.yaw;
+            }
+        }
     }
 }
 
