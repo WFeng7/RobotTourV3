@@ -11,6 +11,7 @@
 // #include <MPU9250.h>
 
 #include "Drivetrain.h"
+#include <math.h>
 // #include "Constants.h"
 
 // Pins
@@ -166,20 +167,51 @@ void findPath() {
   }
 }
 
+void sensorTask(void *parameter) {
+  MPU9250_DMP imu = drivetrain.imu;
+  while (imu.begin() != INV_SUCCESS) {
+    // Serial.println("Failed to initialize IMU!");
+    delay(1000);
+  }
+
+  imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
+  imu.setGyroFSR(2000);
+  imu.setAccelFSR(2);
+  imu.setLPF(5);
+  imu.setSampleRate(10);
+  imu.setCompassSampleRate(10);
+    
+  while (1) {
+    if (imu.dataReady()) {
+      imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
+
+      float ax = imu.calcAccel(imu.ax);
+      float ay = imu.calcAccel(imu.ay);
+      float az = imu.calcAccel(imu.az);
+      float gx = imu.calcGyro(imu.gx);
+      float gy = imu.calcGyro(imu.gy);
+      float gz = imu.calcGyro(imu.gz);
+      float mx = imu.calcMag(imu.mx);
+      float my = imu.calcMag(imu.my);
+      float mz = imu.calcMag(imu.mz);
+
+      drivetrain.filter.update(gx, gy, gz, ax, ay, az, mx, my, mz);
+      
+      xSemaphoreTake(drivetrain.yawMutex, portMAX_DELAY);
+      drivetrain.sharedYaw = drivetrain.filter.getYaw();
+      xSemaphoreGive(drivetrain.yawMutex);
+
+      delay(1000.0 / drivetrain.frequency);
+    }
+  }
+}
+
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(115200);
+  Wire.begin();
   delay(2000);
   Serial.println("Setup");
-  // if (!mpu.setup(0x68)) {  // change to your own address
-  //   while (1) {
-  //     Serial.println("MPU connection failed. Please check your connection with `connection_check` example.");
-  //     delay(5000);
-  //   }
-  // }
 
-  // mpu.calibrateAccelGyro();
-  // mpu.calibrateMag();
   pinMode(SLEEP1, OUTPUT);
   pinMode(SLEEP2, OUTPUT);
   pinMode(MICROSTEP, OUTPUT);
@@ -197,11 +229,21 @@ void setup() {
   pinMode(Y2_DIR, OUTPUT);
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
-  // y_stepper1.setMaxSpeed(1000);
-  // y_stepper1.setSpeed(300);
-  // // digitalWrite(SLEEP1, HIGH);
-  // y_stepper1.runSpeedToPosition();
-  // // digitalWrite(SLEEP1, LOW);
+
+  while (drivetrain.imu.begin() != INV_SUCCESS) {
+    // Serial.println("Failed to initialize IMU!");
+    delay(1000);
+  }
+
+  drivetrain.imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
+  drivetrain.imu.setGyroFSR(2000);
+  drivetrain.imu.setAccelFSR(2);
+  drivetrain.imu.setLPF(5);
+  drivetrain.imu.setSampleRate(10);
+  drivetrain.imu.setCompassSampleRate(10);
+
+  // drivetrain.createMutex();
+  // xTaskCreatePinnedToCore(sensorTask, "SensorTask", 10000, NULL, 1, &drivetrain.sensorTaskHandle, 1);
   
   // CHANGE THIS:
   start = 0;
@@ -257,31 +299,35 @@ void test() {
 }
 
 void run() {
-  for(std::string &s : path) {
-    if(s[0] == 't') {
-      drivetrain.driveDistance(std::stoi(s.substr(1)), false);
-    }
-    else if(s[0] == 'r') {
-      drivetrain.turnRight();
-    }
-    else if(s[0] == 'l') {
-      drivetrain.turnLeft();
-    }
-    else if(s[0] == 'a') {
-      drivetrain.turnAround();
-    }
-  }
+  // for(std::string &s : path) {
+  //   if(s[0] == 't') {
+  //     drivetrain.driveDistance(std::stoi(s.substr(1)), false);
+  //   }
+  //   else if(s[0] == 'r') {
+  //     drivetrain.turnRight();
+  //   }
+  //   else if(s[0] == 'l') {
+  //     drivetrain.turnLeft();
+  //   }
+  //   else if(s[0] == 'a') {
+  //     drivetrain.turnAround();
+  //   }
+  // }
+  drivetrain.turnRight();
 }
 
 void loop() {
-  Serial.println("Loop");
-  int reading = digitalRead(BUTTON_PIN);
+  // Serial.println("Loop");
+  // int reading = digitalRead(BUTTON_PIN);
 
-  if(reading == LOW) {
-    drivetrain.resetOrientation();
-    Serial.print("OK");
-    delay(2000);
-    run();
-  }
+  // if(reading == LOW) {
+  //   drivetrain.resetOrientation();
+  //   Serial.print("OK");
+  //   delay(2000);
+  //   run();
+  // }
+  drivetrain.updateYaw();
+  Serial.println(drivetrain.getYaw());
+  delay(10);
   // test();
 }

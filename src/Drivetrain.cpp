@@ -48,6 +48,10 @@ void Drivetrain::stepperSleep() {
     digitalWrite(SLEEP2, LOW);
 }
 
+void Drivetrain::createMutex() {
+    yawMutex = xSemaphoreCreateMutex();
+}
+
 void Drivetrain::driveDistance(double pdist, bool horizontal) { // TO-DO: CONVERT DIST TO STEPS
     MultiStepper multi;
     int dist = (int)(pdist * stepsPerRev / (PI * WHEELDIAMETER));
@@ -115,16 +119,48 @@ void Drivetrain::driveTiles(double tiles, bool horizontal) {
     driveDistance(tiles * TILE_LENGTH, horizontal);
 }
 
+void Drivetrain::updateYaw() {
+    // xSemaphoreTake(yawMutex, portMAX_DELAY);
+    // float yaw = sharedYaw;
+    // xSemaphoreGive(yawMutex);
+    
+    if (imu.dataReady()) {
+      imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
+
+      float ax = imu.calcAccel(imu.ax);
+      float ay = imu.calcAccel(imu.ay);
+      float az = imu.calcAccel(imu.az);
+      float gx = imu.calcGyro(imu.gx);
+      float gy = imu.calcGyro(imu.gy);
+      float gz = imu.calcGyro(imu.gz);
+      float mx = imu.calcMag(imu.mx);
+      float my = imu.calcMag(imu.my);
+      float mz = imu.calcMag(imu.mz);
+
+      filter.update(gx, gy, gz, ax, ay, az, mx, my, mz);
+      
+    //   xSemaphoreTake(drivetrain.yawMutex, portMAX_DELAY);
+      sharedYaw = filter.getYawRadians() * 180 / PI;
+    //   xSemaphoreGive(drivetrain.yawMutex);
+    }
+}
+
+float Drivetrain::getYaw() {
+    return sharedYaw;
+}
+
 void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
     // MultiStepper multi;
+    float startYaw = getYaw();
+
     double full_dist = (stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER));
     int dist = (int)(stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER)); // TO-DO: CONVERT DIST TO STEPS
     int microstep_dist = (int)((full_dist - dist) * microstepMultiplier);
 
     digitalWrite(SLEEP1, HIGH);
     digitalWrite(SLEEP2, HIGH);
-    x_stepper1.move(dist);
-    y_stepper1.move(dist);
+    // x_stepper1.move(dist);
+    // y_stepper1.move(dist);
     if(full_dist > 0) {
         digitalWrite(X1_DIR, HIGH);
         digitalWrite(X2_DIR, HIGH);
@@ -139,22 +175,27 @@ void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
     }
     x_stepper1.setMaxSpeed(MAXTURNSPEED);
     y_stepper1.setMaxSpeed(MAXTURNSPEED);
-    x_stepper1.setAcceleration(MAXTURNACCELERATION);
-    y_stepper1.setAcceleration(MAXTURNACCELERATION );
-    Serial.println("FULL STEP");
-    while (y_stepper1.distanceToGo() != 0) {
-        // x_stepper1.run();
-        y_stepper1.run();
+    // x_stepper1.setAcceleration(MAXTURNACCELERATION);
+    // y_stepper1.setAcceleration(MAXTURNACCELERATION);
+    // while (y_stepper1.distanceToGo() != 0) {
+    //     // x_stepper1.run();
+    //     y_stepper1.run();
+    // }
+    // setMicrostep(true);
+    // x_stepper1.move(microstep_dist);
+    // y_stepper1.move(microstep_dist);
+    // while (y_stepper1.distanceToGo() != 0) {
+    //     // x_stepper1.run();
+    //     y_stepper1.run();
+    // }
+    y_stepper1.setSpeed(MAXTURNSPEED);
+    y_stepper1.setCurrentPosition(0);
+    float yaw = getYaw();
+    while (yaw - startYaw < angle) {
+        y_stepper1.runSpeed();
+        yaw = getYaw();
     }
-    Serial.println("MICROSTEP");
-    setMicrostep(true);
-    x_stepper1.move(microstep_dist);
-    y_stepper1.move(microstep_dist);
-    while (y_stepper1.distanceToGo() != 0) {
-        // x_stepper1.run();
-        y_stepper1.run();
-    }
-    setMicrostep(false);
+    // setMicrostep(false);
     delay(250);
     stepperSleep();
 }
