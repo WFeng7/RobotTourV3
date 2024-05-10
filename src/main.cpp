@@ -37,7 +37,7 @@
 
 #define BUTTON_PIN 13
 
-#define IMU_INTERRUPT 34
+#define IMU_INTERRUPT 27
 
 // Global Variables
 
@@ -171,44 +171,44 @@ void findPath() {
   }
 }
 
-void sensorTask(void *parameter) {
-  MPU9250_DMP imu = drivetrain.imu;
-  while (imu.begin() != INV_SUCCESS) {
-    // Serial.println("Failed to initialize IMU!");
-    delay(1000);
-  }
+// void sensorTask(void *parameter) {
+//   MPU9250_DMP imu = drivetrain.imu;
+//   while (imu.begin() != INV_SUCCESS) {
+//     // Serial.println("Failed to initialize IMU!");
+//     delay(1000);
+//   }
 
-  imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
-  imu.setGyroFSR(2000);
-  imu.setAccelFSR(2);
-  imu.setLPF(5);
-  imu.setSampleRate(10);
-  imu.setCompassSampleRate(10);
+//   imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
+//   imu.setGyroFSR(2000);
+//   imu.setAccelFSR(2);
+//   imu.setLPF(5);
+//   imu.setSampleRate(10);
+//   imu.setCompassSampleRate(10);
     
-  while (1) {
-    if (imu.dataReady()) {
-      imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
+//   while (1) {
+//     if (imu.dataReady()) {
+//       imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
 
-      float ax = imu.calcAccel(imu.ax);
-      float ay = imu.calcAccel(imu.ay);
-      float az = imu.calcAccel(imu.az);
-      float gx = imu.calcGyro(imu.gx);
-      float gy = imu.calcGyro(imu.gy);
-      float gz = imu.calcGyro(imu.gz);
-      float mx = imu.calcMag(imu.mx);
-      float my = imu.calcMag(imu.my);
-      float mz = imu.calcMag(imu.mz);
+//       float ax = imu.calcAccel(imu.ax);
+//       float ay = imu.calcAccel(imu.ay);
+//       float az = imu.calcAccel(imu.az);
+//       float gx = imu.calcGyro(imu.gx);
+//       float gy = imu.calcGyro(imu.gy);
+//       float gz = imu.calcGyro(imu.gz);
+//       float mx = imu.calcMag(imu.mx);
+//       float my = imu.calcMag(imu.my);
+//       float mz = imu.calcMag(imu.mz);
 
-      drivetrain.filter.update(gx, gy, gz, ax, ay, az, mx, my, mz);
+//       drivetrain.filter.update(gx, gy, gz, ax, ay, az, mx, my, mz);
       
-      xSemaphoreTake(drivetrain.yawMutex, portMAX_DELAY);
-      drivetrain.sharedYaw = drivetrain.filter.getYaw();
-      xSemaphoreGive(drivetrain.yawMutex);
+//       xSemaphoreTake(drivetrain.yawMutex, portMAX_DELAY);
+//       drivetrain.sharedYaw = drivetrain.filter.getYaw();
+//       xSemaphoreGive(drivetrain.yawMutex);
 
-      delay(1000.0 / drivetrain.frequency);
-    }
-  }
-}
+//       delay(1000.0 / drivetrain.frequency);
+//     }
+//   }
+// }
 
 void setup() {
   Serial.begin(115200);
@@ -325,20 +325,22 @@ void run() {
   //   }
   // }
   drivetrain.turnRight();
+  // drivetrain.driveTiles(1, false);
+
 }
 
 void loop() {
   // Serial.println("Loop");
-  // int reading = digitalRead(BUTTON_PIN);
+  int reading = digitalRead(BUTTON_PIN);
 
-  // if(reading == LOW) {
-  //   drivetrain.resetOrientation();
-  //   Serial.print("OK");
-  //   delay(2000);
-  //   run();
-  // }
-  drivetrain.updateYaw();
-  Serial.println(drivetrain.getYaw());
-  delay(10);
+  if(reading == LOW) {
+    drivetrain.resetOrientation();
+    Serial.print("OK");
+    delay(2000);
+    run();
+  }
+  // drivetrain.updateYaw();
+  // Serial.println(drivetrain.getYaw());
+  // delay(10);
   // test();
 }

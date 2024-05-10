@@ -6,6 +6,7 @@
 #include <SparkFunMPU9250-DMP.h>
 #include <MadgwickAHRS.h>
 #include <math.h>
+#include <PIDController.h>
 
 struct Euler {
     float roll, pitch, yaw;
@@ -41,6 +42,8 @@ class Drivetrain {
         int stepsPerRev = 200;
         int microstepMultiplier = 16;
         Quaternion rotation;
+
+        PIDController pid;
     public:
         volatile float sharedYaw = 0.0;
         MPU9250_DMP imu;

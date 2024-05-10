@@ -42,7 +42,10 @@ Drivetrain::Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, Accel
     x_stepper1(*x_stepper1),
     x_stepper2(*x_stepper2),
     y_stepper1(*y_stepper1),
-    y_stepper2(*y_stepper2) {}
+    y_stepper2(*y_stepper2) {
+        pid.begin();
+        pid.tune(1.0, 0.0, 0.0);
+    }
 
 void Drivetrain::stepperSleep() {
     digitalWrite(MICROSTEP, LOW);
@@ -122,7 +125,6 @@ void Drivetrain::driveTiles(double tiles, bool horizontal) {
 }
 
 void Drivetrain::updateYaw() {
-
     if (digitalRead(IMU_INTERRUPT) == LOW) {
         unsigned short fifoCnt = imu.fifoAvailable();
 
@@ -131,74 +133,80 @@ void Drivetrain::updateYaw() {
             
             if (result == INV_SUCCESS) {
                 imu.computeEulerAngles();
+                imu.computeEulerAngles();
 
                 float w = imu.calcQuat(imu.qw);
                 float x = imu.calcQuat(imu.qx);
                 float y = imu.calcQuat(imu.qy);
                 float z = imu.calcQuat(imu.qz);
 
-                rotation.w = w;
-                rotation.x = x;
-                rotation.y = y;
-                rotation.z = z;
+                // rotation.w = w;
+                // rotation.x = x;
+                // rotation.y = y;
+                // rotation.z = z;
 
-                Euler angles = rotation.toEuler();
-                sharedYaw = angles.yaw;
+                // Euler angles = rotation.toEuler();
+                // sharedYaw = angles.yaw;
+                sharedYaw = imu.yaw;
             }
         }
     }
 }
 
 float Drivetrain::getYaw() {
+    updateYaw();
+    Serial.println(sharedYaw);
     return sharedYaw;
 }
 
 void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
+
     // MultiStepper multi;
     float startYaw = getYaw();
+    float targetYaw = startYaw + angle;
 
     double full_dist = (stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER));
     int dist = (int)(stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER)); // TO-DO: CONVERT DIST TO STEPS
     int microstep_dist = (int)((full_dist - dist) * microstepMultiplier);
 
     digitalWrite(SLEEP1, HIGH);
-    digitalWrite(SLEEP2, HIGH);
-    // x_stepper1.move(dist);
-    // y_stepper1.move(dist);
+    // digitalWrite(SLEEP2, HIGH);
     if(full_dist > 0) {
-        digitalWrite(X1_DIR, HIGH);
-        digitalWrite(X2_DIR, HIGH);
+        // digitalWrite(X1_DIR, HIGH);
+        // digitalWrite(X2_DIR, HIGH);
         digitalWrite(Y1_DIR, HIGH);
         digitalWrite(Y2_DIR, HIGH);
     }
     else {
-        digitalWrite(X1_DIR, LOW);
-        digitalWrite(X2_DIR, LOW);
+        // digitalWrite(X1_DIR, LOW);
+        // digitalWrite(X2_DIR, LOW);
         digitalWrite(Y1_DIR, LOW);
         digitalWrite(Y2_DIR, LOW);
     }
     x_stepper1.setMaxSpeed(MAXTURNSPEED);
     y_stepper1.setMaxSpeed(MAXTURNSPEED);
-    // x_stepper1.setAcceleration(MAXTURNACCELERATION);
-    // y_stepper1.setAcceleration(MAXTURNACCELERATION);
-    // while (y_stepper1.distanceToGo() != 0) {
-    //     // x_stepper1.run();
-    //     y_stepper1.run();
-    // }
-    // setMicrostep(true);
-    // x_stepper1.move(microstep_dist);
-    // y_stepper1.move(microstep_dist);
-    // while (y_stepper1.distanceToGo() != 0) {
-    //     // x_stepper1.run();
-    //     y_stepper1.run();
-    // }
+    x_stepper1.setAcceleration(MAXTURNACCELERATION);
+    y_stepper1.setAcceleration(MAXTURNACCELERATION);
+    while (y_stepper1.distanceToGo() != 0) {
+        // x_stepper1.run();
+        y_stepper1.run();
+    }
+    y_stepper1.stop();
+
+    pid.setpoint(targetYaw);
+    pid.limit(-360.0, 360.0);
+    setMicrostep(true);
     y_stepper1.setSpeed(MAXTURNSPEED);
     y_stepper1.setCurrentPosition(0);
     float yaw = getYaw();
-    while (yaw - startYaw < angle) {
-        y_stepper1.runSpeed();
+    while (fabs(yaw - targetYaw) > 0.5) {
         yaw = getYaw();
+        float output = pid.compute(yaw);
+        float speed = (stepsPerRev * microstepMultiplier * (ROBOTDIAMETER * PI * output/360)/(PI * WHEELDIAMETER));
+        y_stepper1.setSpeed(output);
+        y_stepper1.runSpeed();
     }
+    y_stepper1.stop();
     // setMicrostep(false);
     delay(250);
     stepperSleep();
@@ -230,6 +238,11 @@ void Drivetrain::setMicrostep(bool state) {
 }
 
 void Drivetrain::stop() {
+    x_stepper1.stop();
+    x_stepper2.stop();
+    y_stepper1.stop();
+    y_stepper2.stop();
+
     x_stepper1.setCurrentPosition(0);
     x_stepper2.setCurrentPosition(0);
     y_stepper1.setCurrentPosition(0);
