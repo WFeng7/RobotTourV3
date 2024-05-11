@@ -15,24 +15,24 @@
 
 #define motorInterfaceType 1
 
-#define SLEEP1 21
+#define SLEEP1 19
 #define SLEEP2 23
 
 #define WHEELDIAMETER 7.2
 // #define ROBOTDIAMETER 20
 #define TILE_LENGTH 50
 
-#define MAXSPEED 1000
-#define MAXACCELERATION 600
+// #define MAXSPEED 1000
+// #define MAXACCELERATION 600
 
-#define MAXTURNSPEED 875
+#define MAXTURNSPEED 200
 #define MAXTURNACCELERATION 625
 
 // #define NOMINAL_SPEED 800
 // #define NOMINAL_ACCELERATION 400
 
-#define NOMINAL_SPEED 1500 
-#define NOMINAL_ACCELERATION 1250
+#define NOMINAL_SPEED 1750 
+#define NOMINAL_ACCELERATION 600
 
 #define MICROSTEP 14
 
@@ -107,8 +107,8 @@ void Drivetrain::driveDistance(double pdist, bool horizontal) { // TO-DO: CONVER
         // multi.runSpeedToPosition();
         y_stepper1.runToPosition();
     }
-    // delay(250);
-    stepperSleep();
+    delay(250);
+    // stepperSleep();
 }
 
 void Drivetrain::driveTiles(double tiles, bool horizontal) {
@@ -156,19 +156,19 @@ void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
     }
     setMicrostep(false);
     delay(250);
-    stepperSleep();
+    // stepperSleep();
 }
 
 void Drivetrain::turnRight() {
-    turn(90, 19.8);
+    turn(90, 19.5);
 }
 
 void Drivetrain::turnLeft() {
-    turn(-90, 20);
+    turn(-90, 19.5);
 }
 
 void Drivetrain::turnAround() {
-    turn(180, 19.7);
+    turn(180, 19.5);
 }
 
 void Drivetrain::resetOrientation() {

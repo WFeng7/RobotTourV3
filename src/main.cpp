@@ -152,8 +152,7 @@ void findPath() {
         path.push_back("l");
       }
       else {
-        path.push_back("l");
-        path.push_back("l");
+        path.push_back("a");
       }
       dir = ndir;
     }
@@ -256,21 +255,33 @@ void test() {
   drivetrain.turn(x, y);
 }
 
+// void run() {
+//   for(std::string &s : path) {
+//     if(s[0] == 't') {
+//       drivetrain.driveDistance(std::stoi(s.substr(1)), false);
+//     }
+//     else if(s[0] == 'r') {
+//       drivetrain.turnRight();
+//     }
+//     else if(s[0] == 'l') {
+//       drivetrain.turnLeft();
+//     }
+//     else if(s[0] == 'a') {
+//       drivetrain.turnAround();
+//     }
+//   }
+// }
+
 void run() {
-  for(std::string &s : path) {
-    if(s[0] == 't') {
-      drivetrain.driveDistance(std::stoi(s.substr(1)), false);
-    }
-    else if(s[0] == 'r') {
-      drivetrain.turnRight();
-    }
-    else if(s[0] == 'l') {
-      drivetrain.turnLeft();
-    }
-    else if(s[0] == 'a') {
-      drivetrain.turnAround();
-    }
-  }
+  // drivetrain.driveTiles(1, false);
+  drivetrain.turnRight();
+  drivetrain.turnRight(); 
+  drivetrain.turnRight(); 
+  drivetrain.turnRight(); 
+  drivetrain.turnRight();
+  drivetrain.turnRight(); 
+  drivetrain.turnRight(); 
+  drivetrain.turnRight(); 
 }
 
 void loop() {
@@ -284,4 +295,7 @@ void loop() {
     run();
   }
   // test();
+  digitalWrite(MICROSTEP, LOW);
+  digitalWrite(SLEEP1, LOW);
+  digitalWrite(SLEEP2, LOW);
 }
