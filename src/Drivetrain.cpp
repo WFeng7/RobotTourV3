@@ -36,13 +36,12 @@
 
 #define MICROSTEP 14
 
-Drivetrain::Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, AccelStepper* y_stepper1, AccelStepper* y_stepper2, Adafruit_BNO055* bno, ContinuousStepper<StepperDriver>* continous):
+Drivetrain::Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, AccelStepper* y_stepper1, AccelStepper* y_stepper2, Adafruit_BNO055* bno):
     x_stepper1(*x_stepper1),
     x_stepper2(*x_stepper2),
     y_stepper1(*y_stepper1),
     y_stepper2(*y_stepper2),
-    bno(*bno),
-    continuous(*continous) {
+    bno(*bno) {
         pid.begin();
         pid.tune(90.0, 0.0, 0.0);
     }

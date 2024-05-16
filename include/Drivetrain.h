@@ -12,7 +12,6 @@
 class Drivetrain {
     private: 
         AccelStepper x_stepper1, x_stepper2, y_stepper1, y_stepper2;
-        ContinuousStepper<StepperDriver> continuous;
         int orientation = 0;
         int stepsPerRev = 200;
         int microstepMultiplier = 16;
@@ -24,7 +23,7 @@ class Drivetrain {
         float frequency = 100.0;
         Adafruit_BNO055 bno;
         Madgwick filter;
-        Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, AccelStepper* y_stepper1, AccelStepper* y_stepper2, Adafruit_BNO055* bno, ContinuousStepper<StepperDriver>* continous);
+        Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, AccelStepper* y_stepper1, AccelStepper* y_stepper2, Adafruit_BNO055* bno);
         void stepperSleep();
         void driveDistance(double dist, bool horizontal);
         void turn(int angle, double ROBOTDIAMETER);
