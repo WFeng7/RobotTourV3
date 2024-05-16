@@ -1,40 +1,7 @@
 #include <Arduino.h>
 #include "Drivetrain.h"
 
-#define X1_STEP 27 // motor 4
-#define X1_DIR 18
-
-#define X2_STEP 27 // motor 2
-#define X2_DIR 15
-
-#define Y1_STEP 4 // motor 1
-#define Y1_DIR 32
-
-#define Y2_STEP 4 // motor 3
-#define Y2_DIR 25
-
-#define motorInterfaceType 1
-
-#define SLEEP1 19
-#define SLEEP2 23
-
-#define WHEELDIAMETER 7.2
-// #define ROBOTDIAMETER 20
-#define TILE_LENGTH 50
-
-#define MAXSPEED 1000
-#define MAXACCELERATION 600
-
-#define MAXTURNSPEED 1500
-#define MAXTURNACCELERATION 1250
-
-// #define NOMINAL_SPEED 800
-// #define NOMINAL_ACCELERATION 400
-
-#define NOMINAL_SPEED 1500
-#define NOMINAL_ACCELERATION 1250
-
-#define MICROSTEP 14
+#include <Definitions.h>
 
 Drivetrain::Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, AccelStepper* y_stepper1, AccelStepper* y_stepper2, Adafruit_BNO055* bno):
     x_stepper1(*x_stepper1),
@@ -55,14 +22,7 @@ void Drivetrain::stepperSleep() {
 void Drivetrain::driveDistance(double pdist, bool horizontal) { // TO-DO: CONVERT DIST TO STEPS
     int dist = (int)(pdist * stepsPerRev / (PI * WHEELDIAMETER));
     digitalWrite(SLEEP1, HIGH);
-    // digitalWrite(SLEEP2, HIGH);
-    // digitalWrite(SLEEP2, HIGH);
-    // if (orientation == 180 || orientation == 270) {
-    //     dist *= -1;
-    // }
     y_stepper1.move(dist);
-    // y_stepper1.move((orientation == 180 || orientation == 270 ? -1 : 1) * dist);
-    // y_stepper2.move((orientation == 0 || orientation == 90 ? -1 : 1) * dist);
     if(dist > 0) {
         digitalWrite(Y1_DIR, HIGH); // clockwise
         digitalWrite(Y2_DIR, LOW);
@@ -72,16 +32,9 @@ void Drivetrain::driveDistance(double pdist, bool horizontal) { // TO-DO: CONVER
         digitalWrite(Y2_DIR, HIGH);
     }
     y_stepper1.setMaxSpeed(NOMINAL_SPEED);
-    // y_stepper2.setMaxSpeed(1000);
-    // y_stepper1.setSpeed((orientation == 180 || orientation == 270 ? -1 : 1) * speed);
-    // y_stepper2.setSpeed((orientation == 0 || orientation == 90 ? -1 : 1) * speed);
     y_stepper1.setAcceleration(NOMINAL_ACCELERATION);
-    // multi.addStepper(y_stepper1);
-    // multi.addStepper(y_stepper2);
-    // multi.runSpeedToPosition();
     y_stepper1.runToPosition();
     delay(250);
-    // stepperSleep();
 }
 
 void Drivetrain::driveTiles(double tiles, bool horizontal) {
@@ -92,12 +45,8 @@ void Drivetrain::updateYaw() {
     imu::Quaternion quat = bno.getQuat();
 
     double yy = quat.y() * quat.y();
-    // double roll = atan2(2 * (quat.w() * quat.x() + quat.y() * quat.z()), 1 - 2*(quat.x() * quat.x() + yy));
-    // double pitch = asin(2 * quat.w() * quat.y() - quat.x() * quat.z());
     double yaw = atan2(2 * (quat.w() * quat.z() + quat.x() * quat.y()), 1 - 2*(yy+quat.z() * quat.z()));
 
-    // roll = roll * 180 / PI;
-    // pitch = pitch * 180 / PI;
     yaw = yaw * 180 / PI;
 
     sharedYaw = yaw + yawOffset;
@@ -119,9 +68,8 @@ float Drivetrain::getYaw() {
 }
 
 void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
-    // MultiStepper multi;
     double full_dist = (stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER));
-    int dist = (int)(stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER)); // TO-DO: CONVERT DIST TO STEPS
+    int dist = (int)(stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER));
     int microstep_dist = (int)((full_dist - dist) * microstepMultiplier);
 
     digitalWrite(SLEEP1, HIGH);
@@ -152,7 +100,6 @@ void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
     y_stepper1.move(microstep_dist);
     y_stepper1.runToPosition();
     setMicrostep(false);
-    // delay(250);
 
     orientation += angle;
     if (orientation > 180) {
@@ -161,7 +108,6 @@ void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
     else if (orientation < -180) {
         orientation += 360;
     }
-    // stepperSleep();
 }
 
 void Drivetrain::correctWithGyro(double angle, double ROBOTDIAMETER) {
@@ -193,11 +139,8 @@ void Drivetrain::correctWithGyro(double angle, double ROBOTDIAMETER) {
         y_stepper1.runSpeed();
         Serial.printf("Target: %f Current: %f\n", angle, yaw);
         yaw = getYaw();
-        // Serial.println(continuous.isSpinning());
     }
     y_stepper1.setCurrentPosition(0);
-    // y_stepper1.stop();
-    // setMicrostep(false);
     delay(250);
     stepperSleep();
 }
