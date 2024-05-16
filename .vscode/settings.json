@@ -53,6 +53,7 @@
         "compare": "cpp",
         "concepts": "cpp",
         "numbers": "cpp",
-        "arduino_mpu9250_log.cpp": "c"
+        "arduino_mpu9250_log.cpp": "c",
+        "set": "cpp"
     }
 }

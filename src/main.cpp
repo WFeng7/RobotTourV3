@@ -2,6 +2,7 @@
 
 #include <AccelStepper.h>
 #include <MultiStepper.h>
+#include <ContinuousStepper.h>
 #include <string.h>
 #include <iostream>
 #include <fstream>
@@ -12,14 +13,15 @@
 
 #include "Drivetrain.h"
 #include <math.h>
+#include <Adafruit_BNO055.h>
 // #include "Constants.h"
 
 // Pins
 
-#define X1_STEP 19 // motor 4
+#define X1_STEP 27 // motor 4
 #define X1_DIR 18
 
-#define X2_STEP 19 // motor 2
+#define X2_STEP 27 // motor 2
 #define X2_DIR 15
 
 #define Y1_STEP 4 // motor 1
@@ -30,20 +32,20 @@
 
 #define motorInterfaceType 1
 
-#define SLEEP1 21
+#define SLEEP1 19
 #define SLEEP2 23
 
 #define MICROSTEP 14
 
 #define BUTTON_PIN 13
 
-#define IMU_INTERRUPT 27
-
 // Global Variables
 
 int t = 0;
 
 const signed char orientationDefault[9] = {0, 1, 0, 0, 0, 1, 1, 0, 0};
+
+adafruit_bno055_offsets_t bno_offsets;
 
 int lastButtonState = HIGH;
 int buttonState;
@@ -56,7 +58,11 @@ AccelStepper x_stepper2 = AccelStepper(motorInterfaceType, X2_STEP, 2);
 AccelStepper y_stepper1 = AccelStepper(motorInterfaceType, Y1_STEP, 2);
 AccelStepper y_stepper2 = AccelStepper(motorInterfaceType, Y2_STEP, 2);
 
-Drivetrain drivetrain = Drivetrain(&x_stepper1, &x_stepper2, &y_stepper1, &y_stepper2);
+ContinuousStepper<StepperDriver> continous;
+
+Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire);
+
+Drivetrain drivetrain = Drivetrain(&x_stepper1, &x_stepper2, &y_stepper1, &y_stepper2, &bno, &continous);
 
 const short N = 4;
 const short dx[4] = {0, 1, 0, -1}, dy[4] = {1, 0, -1, 0};
@@ -157,8 +163,9 @@ void findPath() {
         path.push_back("l");
       }
       else {
-        path.push_back("l");
-        path.push_back("l");
+        // path.push_back("l");
+        // path.push_back("l");
+        path.push_back("a");
       }
       dir = ndir;
     }
@@ -171,47 +178,10 @@ void findPath() {
   }
 }
 
-// void sensorTask(void *parameter) {
-//   MPU9250_DMP imu = drivetrain.imu;
-//   while (imu.begin() != INV_SUCCESS) {
-//     // Serial.println("Failed to initialize IMU!");
-//     delay(1000);
-//   }
-
-//   imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
-//   imu.setGyroFSR(2000);
-//   imu.setAccelFSR(2);
-//   imu.setLPF(5);
-//   imu.setSampleRate(10);
-//   imu.setCompassSampleRate(10);
-    
-//   while (1) {
-//     if (imu.dataReady()) {
-//       imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
-
-//       float ax = imu.calcAccel(imu.ax);
-//       float ay = imu.calcAccel(imu.ay);
-//       float az = imu.calcAccel(imu.az);
-//       float gx = imu.calcGyro(imu.gx);
-//       float gy = imu.calcGyro(imu.gy);
-//       float gz = imu.calcGyro(imu.gz);
-//       float mx = imu.calcMag(imu.mx);
-//       float my = imu.calcMag(imu.my);
-//       float mz = imu.calcMag(imu.mz);
-
-//       drivetrain.filter.update(gx, gy, gz, ax, ay, az, mx, my, mz);
-      
-//       xSemaphoreTake(drivetrain.yawMutex, portMAX_DELAY);
-//       drivetrain.sharedYaw = drivetrain.filter.getYaw();
-//       xSemaphoreGive(drivetrain.yawMutex);
-
-//       delay(1000.0 / drivetrain.frequency);
-//     }
-//   }
-// }
-
 void setup() {
+  digitalWrite(2, LOW);
   Serial.begin(115200);
+
   Wire.begin();
   delay(2000);
   Serial.println("Setup");
@@ -233,19 +203,27 @@ void setup() {
   pinMode(Y2_DIR, OUTPUT);
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
-  pinMode(IMU_INTERRUPT, INPUT_PULLUP);
 
-  while (drivetrain.imu.begin() != INV_SUCCESS) {
+  Serial.println("IMU Setup");
+  if (!drivetrain.bno.begin(OPERATION_MODE_NDOF)) {
     Serial.println("Failed to initialize IMU!");
-    delay(1000);
+    while (1);
   }
 
-  drivetrain.imu.enableInterrupt();
-  drivetrain.imu.setIntLevel(INT_ACTIVE_LOW);
-  drivetrain.imu.setIntLatched(INT_LATCHED);
-  drivetrain.imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_GYRO_CAL, 10);
-  drivetrain.imu.dmpSetOrientation(orientationDefault);
+  drivetrain.bno.enterNormalMode();
+  drivetrain.bno.setExtCrystalUse(true);
+  drivetrain.bno.enableAutoRange(true);
 
+  delay(5000);
+
+  // bno_offsets.accel_offset_x = 0;
+  // bno_offsets.accel_offset_y = 0;
+  // bno_offsets.accel_offset_z = 0;
+  // bno_offsets.gyro_offset_x = 0;
+  // bno_offsets.gyro_offset_y = 0;
+  // bno_offsets.mag_offset_x = 0;
+  // bno_offsets.mag_offset_y = 0;
+  // bno_offsets.mag_offset_z = 0;
   // drivetrain.imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
   // drivetrain.imu.setGyroFSR(2000);
   // drivetrain.imu.setAccelFSR(2);
@@ -310,37 +288,42 @@ void test() {
 }
 
 void run() {
-  // for(std::string &s : path) {
-  //   if(s[0] == 't') {
-  //     drivetrain.driveDistance(std::stoi(s.substr(1)), false);
-  //   }
-  //   else if(s[0] == 'r') {
-  //     drivetrain.turnRight();
-  //   }
-  //   else if(s[0] == 'l') {
-  //     drivetrain.turnLeft();
-  //   }
-  //   else if(s[0] == 'a') {
-  //     drivetrain.turnAround();
-  //   }
-  // }
-  drivetrain.turnRight();
+  for(std::string &s : path) {
+    if(s[0] == 't') {
+      // drivetrain.driveDistance(std::stoi(s.substr(1)), false);
+      Serial.println("Drive distance");
+    }
+    else if(s[0] == 'r') {
+      drivetrain.turnRight();
+    }
+    else if(s[0] == 'l') {
+      drivetrain.turnLeft();
+    }
+    else if(s[0] == 'a') {
+      drivetrain.turnAround();
+    }
+  }
+  // drivetrain.turnRight();
+  // drivetrain.turnLeft();
+  // drivetrain.turnAround();
   // drivetrain.driveTiles(1, false);
 
 }
 
 void loop() {
-  // Serial.println("Loop");
+  digitalWrite(2, HIGH);
   int reading = digitalRead(BUTTON_PIN);
 
   if(reading == LOW) {
     drivetrain.resetOrientation();
+    Serial.println(drivetrain.getYaw());
+    while (fabs(drivetrain.getYaw()) > 0.5) {
+      double yaw = drivetrain.getYaw();
+      drivetrain.setYawOffset(yaw);
+      Serial.println(drivetrain.getYaw());
+    }
     Serial.print("OK");
     delay(2000);
     run();
   }
-  // drivetrain.updateYaw();
-  // Serial.println(drivetrain.getYaw());
-  // delay(10);
-  // test();
 }
