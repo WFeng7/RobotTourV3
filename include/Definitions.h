@@ -1,3 +1,13 @@
+// #define USING_TELNET 1
+
+#ifdef USING_TELNET
+  #include <Arduino.h>
+  #include <Wifi.h>
+  #include <TelnetStream.h>
+  #include <arduino_secrets.h>
+  #include <TimeLib.h>
+#endif
+
 #define X1_STEP 27 // motor 4
 #define X1_DIR 18
 
@@ -36,3 +46,9 @@
 #define NOMINAL_ACCELERATION 1250
 
 #define MICROSTEP 14
+
+#ifdef USING_TELNET
+    #define PRINTER TelnetStream
+#else
+    #define PRINTER Serial
+#endif

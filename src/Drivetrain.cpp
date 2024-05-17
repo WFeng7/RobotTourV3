@@ -53,12 +53,12 @@ void Drivetrain::updateYaw() {
     if (sharedYaw > 180) {
         float prev = sharedYaw;
         sharedYaw -= 360;
-        Serial.printf("%f > 180, Adjusted to: %f\n", prev, sharedYaw);
+        PRINTER.printf("%f > 180, Adjusted to: %f\n", prev, sharedYaw);
     }
     else if (sharedYaw < -180) {
         float prev = sharedYaw;
         sharedYaw += 360;
-        Serial.printf("%f < 180, Adjusted to: %f\n", prev, sharedYaw);
+        PRINTER.printf("%f < 180, Adjusted to: %f\n", prev, sharedYaw);
     }
 }
 
@@ -110,15 +110,26 @@ void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
     }
 }
 
+bool Drivetrain::atSetPoint() {
+    positionError = pid.error;
+    velocityError = pid.dErr;
+
+    if (fabs(positionError) < 0.1 && fabs(velocityError) < 0.1) {
+        return true;
+    }
+    return false;
+}
+
 void Drivetrain::correctWithGyro(double angle, double ROBOTDIAMETER) {
     pid.setpoint(angle);
     pid.limit(-180.0, 180.0);
     // setMicrostep(true);
     float yaw = getYaw();
     long startTime = millis();
+    long onTargetStartTime = millis();
     // y_stepper1.move(100000);
     // y_stepper1.setCurrentPosition(0);
-    while (fabs(yaw - angle) > 0.2 && millis() - startTime < 5000){
+    while (millis() - startTime < 5000){
         double output = pid.compute(yaw);
         if(output > 0) {
             digitalWrite(X1_DIR, HIGH);
@@ -137,16 +148,25 @@ void Drivetrain::correctWithGyro(double angle, double ROBOTDIAMETER) {
         double targetStepsPerSecond = (output * stepsPerRev * (ROBOTDIAMETER * PI) / 360) / (PI * WHEELDIAMETER);
         y_stepper1.setSpeed(targetStepsPerSecond);
         y_stepper1.runSpeed();
-        Serial.printf("Target: %f Current: %f\n", angle, yaw);
+        // PRINTER.printf("Position Error: %f Velocity Error: %f\n", positionError, velocityError);
+        // PRINTER.printf("Target: %f Current: %f\n", angle, yaw);
         yaw = getYaw();
+
+        if (atSetPoint()) {
+            // PRINTER.printf("Position Error: %f Velocity Error: %f\n", positionError, velocityError);
+            break;
+        }
     }
     y_stepper1.setCurrentPosition(0);
     delay(250);
+
     stepperSleep();
 }
 
-void Drivetrain::setYawOffset(double offset) {
-    yawOffset = offset;
+void Drivetrain::zeroYaw() {
+    yawOffset = 0.0;
+    float yaw = getYaw();
+    yawOffset = yaw;
 }
 
 void Drivetrain::turnRight() {

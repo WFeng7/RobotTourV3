@@ -16,13 +16,15 @@ class Drivetrain {
         int stepsPerRev = 200;
         int microstepMultiplier = 16;
 
-        PIDController pid;
+        double velocityError = 0;
+        double positionError = 0;
+
     public:
+        PIDController pid;
         volatile float sharedYaw = 0.0;
         double yawOffset = 0;
         float frequency = 100.0;
         Adafruit_BNO055 bno;
-        Madgwick filter;
         Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, AccelStepper* y_stepper1, AccelStepper* y_stepper2, Adafruit_BNO055* bno);
         void stepperSleep();
         void driveDistance(double dist, bool horizontal);
@@ -35,10 +37,11 @@ class Drivetrain {
         void turnLeft();
         void turnAround();
         void correctWithGyro(double angle, double ROBOTDIAMETER);
-        void setYawOffset(double offset);
+        bool atSetPoint();
 
         float getYaw();
         void updateYaw();
+        void zeroYaw();
 };
 
 #endif

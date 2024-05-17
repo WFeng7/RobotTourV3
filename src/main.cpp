@@ -44,6 +44,15 @@ std::vector<std::string> path;
 
 Drivetrain drivetrain = Drivetrain(&x_stepper1, &x_stepper2, &y_stepper1, &y_stepper2, &bno);
 
+// Telnet
+const long gmtOffset_sec = 3600;
+const int daylightOffset_sec = 3600;
+
+#ifdef USING_TELNET
+  const char ssid[] = SECRET_SSID;
+  const char pass[] = SECRET_PASS;
+#endif
+
 void setup() {
   digitalWrite(2, LOW);
   Serial.begin(115200);
@@ -51,6 +60,33 @@ void setup() {
   Wire.begin();
   delay(2000);
   Serial.println("Setup");
+
+  #ifdef USING_TELNET
+    Serial.printf("Connecting to WiFi: %s\n", ssid);
+    WiFi.begin(ssid, pass);
+    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+      Serial.println("WiFi Failed!");
+      while (1) {
+        delay(10);
+      }
+    }
+
+    configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org");
+    time_t now = time(nullptr);
+    while (now < SECS_YR_2000) {
+      delay(100);
+      now = time(nullptr);
+    }
+    setTime(now);
+
+    IPAddress ip = WiFi.localIP();
+    Serial.println();
+    Serial.println("Connected to WiFi network.");
+    Serial.print("Connect with Telnet client to ");
+    Serial.println(ip);
+
+    TelnetStream.begin();
+  #endif
 
   pinMode(SLEEP1, OUTPUT);
   pinMode(SLEEP2, OUTPUT);
@@ -70,9 +106,9 @@ void setup() {
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
-  Serial.println("IMU Setup");
+  PRINTER.println("IMU Setup");
   if (!drivetrain.bno.begin(OPERATION_MODE_NDOF)) {
-    Serial.println("Failed to initialize IMU!");
+    PRINTER.println("Failed to initialize IMU!");
     while (1);
   }
 
@@ -101,13 +137,31 @@ void setup() {
   path = pathfinding.getPath();
 
   delay(5000);
+
+  PRINTER.println("Setup Complete");
+}
+
+std::vector<std::string> split(const std::string& s, char c) {
+  std::vector<std::string> result;
+  size_t begin = 0;
+  while (true) {
+    size_t end = s.find_first_of(c, begin);
+    result.push_back(s.substr(begin, end - begin));
+
+    if (end == std::string::npos) {
+      break;
+    }
+
+    begin = end + 1;
+  }
+  return result;
 }
 
 void run() {
   for(std::string &s : path) {
     if(s[0] == 't') {
-      // drivetrain.driveDistance(std::stoi(s.substr(1)), false);
-      Serial.println("Drive distance");
+      drivetrain.driveDistance(std::stoi(s.substr(1)), false);
+      // Serial.println("Drive distance");
     }
     else if(s[0] == 'r') {
       drivetrain.turnRight();
@@ -119,6 +173,42 @@ void run() {
       drivetrain.turnAround();
     }
   }
+
+  // PRINTER.println("Enter command: ");
+  // String command = PRINTER.readStringUntil('\n');
+
+  // while (command == "") {
+  //   command = PRINTER.readStringUntil('\n');
+  // }
+
+  // if (command == "zero") {
+  //   drivetrain.zeroYaw();
+  //   drivetrain.resetOrientation();
+  //   PRINTER.printf("Yaw: %f\n", drivetrain.getYaw());
+  // }
+  // else {
+  //     std::vector<std::string> commands = split(command.c_str(), ' ');
+
+  //     PRINTER.println("Executing: " + command);
+
+  //     double kp = std::stod(commands[0]);
+  //     double ki = std::stod(commands[1]);
+  //     double kd = std::stod(commands[2]);
+
+  //     drivetrain.pid.tune(kp, ki, kd);
+
+  //     PRINTER.println("WAITING FOR TURN COMMAND");
+  //     while (true) {
+  //       if (PRINTER.available() > 0) {
+  //         String command2 = PRINTER.readStringUntil('\n');
+
+  //         if (command2 == "turn") {
+  //           drivetrain.turnRight();
+  //           break;
+  //         }
+  //       }
+  //     }
+  // }
 }
 
 void loop() {
@@ -127,14 +217,16 @@ void loop() {
 
   if(reading == LOW) {
     drivetrain.resetOrientation();
-    Serial.println(drivetrain.getYaw());
-    while (fabs(drivetrain.getYaw()) > 0.5) {
-      double yaw = drivetrain.getYaw();
-      drivetrain.setYawOffset(yaw);
-      Serial.println(drivetrain.getYaw());
-    }
-    Serial.print("OK");
+    PRINTER.printf("Pre-zero: %f\n", drivetrain.getYaw());
+    drivetrain.zeroYaw();
+    PRINTER.printf("Post-zero: %f\n", drivetrain.getYaw());
+    PRINTER.print("OK");
     delay(2000);
     run();
+    drivetrain.stepperSleep();
+    digitalWrite(2, LOW);
+    delay(1000);
   }
+
+  // run();
 }
