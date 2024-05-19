@@ -8,17 +8,11 @@
   #include <TimeLib.h>
 #endif
 
-#define X1_STEP 27 // motor 4
-#define X1_DIR 18
-
-#define X2_STEP 27 // motor 2
-#define X2_DIR 15
-
 #define Y1_STEP 4 // motor 1
-#define Y1_DIR 32
+#define Y1_DIR 32 //25 for A-bot
 
 #define Y2_STEP 4 // motor 3
-#define Y2_DIR 25
+#define Y2_DIR 25 //32 for A-bot
 
 #define motorInterfaceType 1
 
@@ -32,6 +26,9 @@
 #define WHEELDIAMETER 7.2
 // #define ROBOTDIAMETER 20
 #define TILE_LENGTH 50
+
+// #define MAXSPEED 1000
+// #define MAXACCELERATION 600
 
 #define MAXSPEED 1000
 #define MAXACCELERATION 600
@@ -52,3 +49,8 @@
 #else
     #define PRINTER Serial
 #endif
+
+#define TURN_KP 20.0
+#define TURN_KI 0.0
+#define TURN_KD 0.0
+#define TURN_DT 0.02

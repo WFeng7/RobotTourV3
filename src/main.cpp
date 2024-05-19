@@ -2,7 +2,6 @@
 
 #include <AccelStepper.h>
 #include <MultiStepper.h>
-#include <ContinuousStepper.h>
 #include <string.h>
 #include <iostream>
 #include <fstream>
@@ -31,8 +30,6 @@ int buttonState;
 unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
 
-AccelStepper x_stepper1 = AccelStepper(motorInterfaceType, X1_STEP, 2);
-AccelStepper x_stepper2 = AccelStepper(motorInterfaceType, X2_STEP, 2);
 AccelStepper y_stepper1 = AccelStepper(motorInterfaceType, Y1_STEP, 2);
 AccelStepper y_stepper2 = AccelStepper(motorInterfaceType, Y2_STEP, 2);
 
@@ -42,7 +39,7 @@ Pathfinding pathfinding = Pathfinding();
 
 std::vector<std::string> path;
 
-Drivetrain drivetrain = Drivetrain(&x_stepper1, &x_stepper2, &y_stepper1, &y_stepper2, &bno);
+Drivetrain drivetrain = Drivetrain(&y_stepper1, &y_stepper2, &bno);
 
 // Telnet
 const long gmtOffset_sec = 3600;
@@ -95,10 +92,6 @@ void setup() {
   digitalWrite(SLEEP2, LOW);
   digitalWrite(MICROSTEP, LOW);
 
-  pinMode(X1_STEP, OUTPUT);
-  pinMode(X1_DIR, OUTPUT);
-  pinMode(X2_STEP, OUTPUT);
-  pinMode(X2_DIR, OUTPUT);
   pinMode(Y1_STEP, OUTPUT);
   pinMode(Y1_DIR, OUTPUT);
   pinMode(Y2_STEP, OUTPUT);
@@ -173,42 +166,10 @@ void run() {
       drivetrain.turnAround();
     }
   }
-
-  // PRINTER.println("Enter command: ");
-  // String command = PRINTER.readStringUntil('\n');
-
-  // while (command == "") {
-  //   command = PRINTER.readStringUntil('\n');
-  // }
-
-  // if (command == "zero") {
-  //   drivetrain.zeroYaw();
-  //   drivetrain.resetOrientation();
-  //   PRINTER.printf("Yaw: %f\n", drivetrain.getYaw());
-  // }
-  // else {
-  //     std::vector<std::string> commands = split(command.c_str(), ' ');
-
-  //     PRINTER.println("Executing: " + command);
-
-  //     double kp = std::stod(commands[0]);
-  //     double ki = std::stod(commands[1]);
-  //     double kd = std::stod(commands[2]);
-
-  //     drivetrain.pid.tune(kp, ki, kd);
-
-  //     PRINTER.println("WAITING FOR TURN COMMAND");
-  //     while (true) {
-  //       if (PRINTER.available() > 0) {
-  //         String command2 = PRINTER.readStringUntil('\n');
-
-  //         if (command2 == "turn") {
-  //           drivetrain.turnRight();
-  //           break;
-  //         }
-  //       }
-  //     }
-  // }
+  // drivetrain.turnRight();
+  // drivetrain.turnRight();
+  // drivetrain.turnRight();
+  // drivetrain.turnRight();
 }
 
 void loop() {
@@ -227,6 +188,4 @@ void loop() {
     digitalWrite(2, LOW);
     delay(1000);
   }
-
-  // run();
 }

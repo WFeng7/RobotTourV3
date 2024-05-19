@@ -1,17 +1,10 @@
 #include <Arduino.h>
 #include "Drivetrain.h"
 
-#include <Definitions.h>
-
-Drivetrain::Drivetrain(AccelStepper* x_stepper1, AccelStepper* x_stepper2, AccelStepper* y_stepper1, AccelStepper* y_stepper2, Adafruit_BNO055* bno):
-    x_stepper1(*x_stepper1),
-    x_stepper2(*x_stepper2),
+Drivetrain::Drivetrain(AccelStepper* y_stepper1, AccelStepper* y_stepper2, Adafruit_BNO055* bno):
     y_stepper1(*y_stepper1),
     y_stepper2(*y_stepper2),
-    bno(*bno) {
-        pid.begin();
-        pid.tune(90.0, 0.0, 0.0);
-    }
+    bno(*bno) {}
 
 void Drivetrain::stepperSleep() {
     digitalWrite(MICROSTEP, LOW);
@@ -53,12 +46,12 @@ void Drivetrain::updateYaw() {
     if (sharedYaw > 180) {
         float prev = sharedYaw;
         sharedYaw -= 360;
-        PRINTER.printf("%f > 180, Adjusted to: %f\n", prev, sharedYaw);
+        PRINTER.printf("%f > 180, Adjusted to: %f\n", prev, -1*sharedYaw);
     }
     else if (sharedYaw < -180) {
         float prev = sharedYaw;
         sharedYaw += 360;
-        PRINTER.printf("%f < 180, Adjusted to: %f\n", prev, sharedYaw);
+        PRINTER.printf("%f < 180, Adjusted to: %f\n", prev, -1*sharedYaw);
     }
 }
 
@@ -74,29 +67,21 @@ void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
 
     digitalWrite(SLEEP1, HIGH);
     digitalWrite(SLEEP2, HIGH);
-    x_stepper1.move(dist);
     y_stepper1.move(dist);
     if(full_dist > 0) {
-        digitalWrite(X1_DIR, HIGH);
-        digitalWrite(X2_DIR, HIGH);
         digitalWrite(Y1_DIR, HIGH);
         digitalWrite(Y2_DIR, HIGH);
     }
     else {
-        digitalWrite(X1_DIR, LOW);
-        digitalWrite(X2_DIR, LOW);
         digitalWrite(Y1_DIR, LOW);
         digitalWrite(Y2_DIR, LOW);
     }
-    x_stepper1.setMaxSpeed(MAXTURNSPEED);
     y_stepper1.setMaxSpeed(MAXTURNSPEED);
-    x_stepper1.setAcceleration(MAXTURNACCELERATION);
     y_stepper1.setAcceleration(MAXTURNACCELERATION );
     Serial.println("FULL STEP");
     y_stepper1.runToPosition();
     Serial.println("MICROSTEP");
     setMicrostep(true);
-    x_stepper1.move(microstep_dist);
     y_stepper1.move(microstep_dist);
     y_stepper1.runToPosition();
     setMicrostep(false);
@@ -110,56 +95,39 @@ void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
     }
 }
 
-bool Drivetrain::atSetPoint() {
-    positionError = pid.error;
-    velocityError = pid.dErr;
-
-    if (fabs(positionError) < 0.1 && fabs(velocityError) < 0.1) {
-        return true;
-    }
-    return false;
-}
-
 void Drivetrain::correctWithGyro(double angle, double ROBOTDIAMETER) {
-    pid.setpoint(angle);
-    pid.limit(-180.0, 180.0);
-    // setMicrostep(true);
+    pid.Reset();
+    pid.SetSetpoint(angle);
+    pid.EnableContinuousInput(-180, 180);
+    pid.SetTolerance(0.01);
+    setMicrostep(true);
     float yaw = getYaw();
     long startTime = millis();
     long onTargetStartTime = millis();
     // y_stepper1.move(100000);
-    // y_stepper1.setCurrentPosition(0);
-    while (millis() - startTime < 5000){
-        double output = pid.compute(yaw);
+    // y_stepper1.setCurrentPosition(0));
+    PRINTER.println(pid.AtSetpoint());
+    while (!pid.AtSetpoint() && millis() - startTime < 5000){
+        double output = pid.Calculate(yaw);
         if(output > 0) {
-            digitalWrite(X1_DIR, HIGH);
-            digitalWrite(X2_DIR, HIGH);
             digitalWrite(Y1_DIR, HIGH);
             digitalWrite(Y2_DIR, HIGH);
         }
         else {
-            digitalWrite(X1_DIR, LOW);
-            digitalWrite(X2_DIR, LOW);
             digitalWrite(Y1_DIR, LOW);
             digitalWrite(Y2_DIR, LOW);
         }
         digitalWrite(SLEEP1, HIGH);
         digitalWrite(SLEEP2, HIGH);
         double targetStepsPerSecond = (output * stepsPerRev * (ROBOTDIAMETER * PI) / 360) / (PI * WHEELDIAMETER);
-        y_stepper1.setSpeed(targetStepsPerSecond);
+        y_stepper1.setSpeed(targetStepsPerSecond* 16);
         y_stepper1.runSpeed();
-        // PRINTER.printf("Position Error: %f Velocity Error: %f\n", positionError, velocityError);
-        // PRINTER.printf("Target: %f Current: %f\n", angle, yaw);
+        PRINTER.printf("Target: %f Current: %f\n", angle, yaw);
         yaw = getYaw();
-
-        if (atSetPoint()) {
-            // PRINTER.printf("Position Error: %f Velocity Error: %f\n", positionError, velocityError);
-            break;
-        }
     }
     y_stepper1.setCurrentPosition(0);
     delay(250);
-
+    setMicrostep(false);
     stepperSleep();
 }
 
@@ -223,18 +191,12 @@ void Drivetrain::setMicrostep(bool state) {
 }
 
 void Drivetrain::stop() {
-    x_stepper1.stop();
-    x_stepper2.stop();
     y_stepper1.stop();
     y_stepper2.stop();
-
-    x_stepper1.setCurrentPosition(0);
-    x_stepper2.setCurrentPosition(0);
+;
     y_stepper1.setCurrentPosition(0);
     y_stepper2.setCurrentPosition(0);
 
-    digitalWrite(X1_DIR, LOW);
-    digitalWrite(X2_DIR, LOW);
     digitalWrite(Y1_DIR, LOW);
     digitalWrite(Y2_DIR, LOW);
 }

@@ -89,9 +89,9 @@ void Pathfinding::findPath() {
         path.push_back("l");
       }
       else {
-        // path.push_back("l");
-        // path.push_back("l");
-        path.push_back("a");
+        path.push_back("r");
+        path.push_back("r");
+        // path.push_back("a");
       }
       dir = ndir;
     }
