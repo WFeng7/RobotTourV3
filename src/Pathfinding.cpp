@@ -13,14 +13,14 @@ void Pathfinding::addBlocks(std::vector<std::string> vblocks, std::vector<std::s
   for(int i = 0; i < 4; i++) {
     for(int j = 0; j < 3; j++) {
       if(vblocks[i][j] == '1') {
-        addWood(4 - i - 1, j, 4 - i - 1, j + 1);
+        addWood(j, 4 - i - 1, j + 1, 4 - i - 1);
       }
     }
   }
   for(int i = 0; i < 3; i++) {
     for(int j = 0; j < 4; j++) {
       if(hblocks[i][j] == '1') {
-        addWood(3 - i - 1, j, 3 - i, j);
+        addWood(j, 3 - i - 1, j, 3 - i);
       }
     }
   }
@@ -46,8 +46,11 @@ void Pathfinding::findPath() {
   }
   std::queue<T> q;
   T t; t.x = start; t.y = 0; t.z = 0; t.p = -1, t.pz = 0;
+  if(bonus[t.x * N + t.y]) {
+    t.z |= (1 << (bonus[t.x * N + t.y] - 1));
+  }
   T nt;
-  vis[t.x * N][0] = {-1, 0};
+  vis[t.x * N][t.z] = {-1, 0};
   q.push(t);
   while(q.size()) {
       t = q.front();

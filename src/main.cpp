@@ -150,7 +150,7 @@ void setup() {
   #endif
 
   // CHANGE THIS:
-  pathfinding.setStart(0);
+  pathfinding.setStart(3);
   pathfinding.setTarget({1, 3});
 
   std::vector<std::string> vblocks, hblocks;
