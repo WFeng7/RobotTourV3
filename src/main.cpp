@@ -152,18 +152,30 @@ void setup() {
   // CHANGE THIS:
   pathfinding.setStart(0);
   pathfinding.setTarget({1, 3});
-  pathfinding.addGate(0, 1);
-  pathfinding.addGate(2, 0);
-  pathfinding.addGate(3, 0);
-  pathfinding.addGate(3, 3);
-  pathfinding.addWood(0, 0, 0, 1);
-  pathfinding.addWood(0, 1, 1, 1);
-  pathfinding.addWood(1, 3, 1, 2);
-  pathfinding.addWood(1, 3, 2, 3);
-  pathfinding.addWood(1, 0, 2, 0);
-  pathfinding.addWood(2, 0, 3, 0);
-  pathfinding.addWood(2, 1, 3, 1);
-  pathfinding.addWood(3, 2, 3, 3);
+
+  std::vector<std::string> vblocks, hblocks;
+  pathfinding.addGate("0 1");
+  pathfinding.addGate("2 0");
+  pathfinding.addGate("3 0");
+  pathfinding.addGate("3 3");
+  // pathfinding.addWood(0, 0, 0, 1);
+  // pathfinding.addWood(0, 1, 1, 1);
+  // pathfinding.addWood(1, 3, 1, 2);
+  // pathfinding.addWood(1, 3, 2, 3);
+  // pathfinding.addWood(1, 0, 2, 0);
+  // pathfinding.addWood(2, 0, 3, 0);
+  // pathfinding.addWood(2, 1, 3, 1);
+  // pathfinding.addWood(3, 2, 3, 3);
+  vblocks.push_back("010");
+  vblocks.push_back("000");
+  vblocks.push_back("101");
+  vblocks.push_back("011");
+
+  hblocks.push_back("0101");
+  hblocks.push_back("0000");
+  hblocks.push_back("1000");
+
+  pathfinding.addBlocks(vblocks, hblocks);
 
   pathfinding.findPath();
 

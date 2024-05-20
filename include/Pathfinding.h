@@ -22,7 +22,9 @@ class Pathfinding {
     public:
         Pathfinding();
         void addWood(short a, short b, short c, short d);
+        void addBlocks(std::vector<std::string> vblocks, std::vector<std::string> hblocks);
         void addGate(short a, short b);
+        void addGate(std::string s);
         void findPath();
         std::vector<std::string> getPath();
 

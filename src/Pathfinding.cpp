@@ -9,9 +9,31 @@ void Pathfinding::addWood(short a, short b, short c, short d) {
   wood[c * N + d][a * N + b] = true;
 }
 
+void Pathfinding::addBlocks(std::vector<std::string> vblocks, std::vector<std::string> hblocks) {
+  for(int i = 0; i < 4; i++) {
+    for(int j = 0; j < 3; j++) {
+      if(vblocks[i][j] == '1') {
+        addWood(4 - i - 1, j, 4 - i - 1, j + 1);
+      }
+    }
+  }
+  for(int i = 0; i < 3; i++) {
+    for(int j = 0; j < 4; j++) {
+      if(hblocks[i][j] == '1') {
+        addWood(3 - i - 1, j, 3 - i, j);
+      }
+    }
+  }
+}
+
 void Pathfinding::addGate(short a, short b) {
   ++n_bonus;
   bonus[a * N + b] = n_bonus;
+}
+
+void Pathfinding::addGate(std::string s) {
+  ++n_bonus;
+  bonus[(s[0] - '0') * N + (s[2] - '0')] = n_bonus;
 }
 
 void Pathfinding::findPath() {
