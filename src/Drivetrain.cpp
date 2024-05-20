@@ -139,7 +139,7 @@ void Drivetrain::zeroYaw() {
 
 void Drivetrain::turnRight() {
     double startYaw = getYaw();
-    turn(90, 18);
+    turn(90, 19);
     double correctionAngle = orientation;
     if (correctionAngle > 180) {
         correctionAngle -= 360;
@@ -148,12 +148,12 @@ void Drivetrain::turnRight() {
         correctionAngle += 360;
     }
     Serial.println(correctionAngle);
-    correctWithGyro(correctionAngle, 19);
+    correctWithGyro(correctionAngle, 24.13);
 }
 
 void Drivetrain::turnLeft() {
     double startYaw = getYaw();
-    turn(-90, 18);
+    turn(-90, 19);
     double correctionAngle = orientation;
     if (correctionAngle > 180) {
         correctionAngle -= 360;
@@ -161,12 +161,12 @@ void Drivetrain::turnLeft() {
     else if (correctionAngle < -180) {
         correctionAngle += 360;
     }
-    correctWithGyro(correctionAngle, 19);
+    correctWithGyro(correctionAngle, 24.13);
 }
 
 void Drivetrain::turnAround() {
     double startYaw = getYaw();
-    turn(180, 18);
+    turn(180, 19);
     double correctionAngle = orientation;
     if (correctionAngle > 180) {
         correctionAngle -= 360;
@@ -174,7 +174,7 @@ void Drivetrain::turnAround() {
     else if (correctionAngle < -180) {
         correctionAngle += 360;
     }
-    correctWithGyro(correctionAngle, 19);
+    correctWithGyro(correctionAngle, 24.13);
 }
 
 void Drivetrain::resetOrientation() {

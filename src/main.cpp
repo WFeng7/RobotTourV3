@@ -16,6 +16,8 @@
 
 #include <Definitions.h>
 
+#include <EEPROM.h>
+
 // Global Variables
 
 int t = 0;
@@ -109,6 +111,35 @@ void setup() {
   drivetrain.bno.setExtCrystalUse(true);
   drivetrain.bno.enableAutoRange(true);
 
+    //calibrate IMU
+  PRINTER.println("Calibrating IMU");
+  uint8_t system, gyro, accel, mag = 0;
+
+  //blink LED while calibrating
+
+  adafruit_bno055_offsets_t calibrationData;
+  #ifdef SAVE_CALIBRATION
+    while (!(system == 3 && gyro == 3 && mag == 3)) {
+      digitalWrite(2, HIGH);
+      drivetrain.bno.getCalibration(&system, &gyro, &accel, &mag);
+      PRINTER.printf("Sys: %d, Gyro: %d, Accel: %d, Mag: %d\n", system, gyro, accel, mag);
+      delay(2000);
+      digitalWrite(2, LOW);
+    }
+    drivetrain.bno.getSensorOffsets(calibrationData);
+    for (unsigned int i = 0; i < sizeof(calibrationData); i++) {
+      double percent = ((double)i / (double)sizeof(calibrationData)) * 100.0;
+      PRINTER.printf("Writing (%d%)\n", percent);
+      EEPROM.write(i, *((uint8_t*)&calibrationData + i));
+    }
+  #else
+    for (unsigned int i = 0; i < sizeof(calibrationData); i++) {
+        *((uint8_t*)&calibrationData + i) = EEPROM.read(i);
+    }
+
+    bno.setSensorOffsets(calibrationData);
+  #endif
+
   // CHANGE THIS:
   pathfinding.setStart(0);
   pathfinding.setTarget({1, 3});
@@ -166,6 +197,8 @@ void run() {
       drivetrain.turnAround();
     }
   }
+  // drivetrain.driveDistance(50, false);
+  // drivetrain.driveDistance(-50, false);
   // drivetrain.turnRight();
   // drivetrain.turnRight();
   // drivetrain.turnRight();
