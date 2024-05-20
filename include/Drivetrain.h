@@ -31,6 +31,7 @@ class Drivetrain {
         void stop();
         void driveTiles(double tiles, bool horizontal);
         void resetOrientation();
+        int getOrientation();
         void setMicrostep(bool state);
         void turnRight();
         void turnLeft();

@@ -56,3 +56,6 @@
 #define TURN_KI 0.0
 #define TURN_KD 0.0
 #define TURN_DT 0.02
+
+#define ECHO_PIN 18
+#define TRIG_PIN 5

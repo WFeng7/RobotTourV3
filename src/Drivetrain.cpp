@@ -181,6 +181,10 @@ void Drivetrain::resetOrientation() {
     orientation = 0;
 }
 
+int Drivetrain::getOrientation() {
+    return orientation;
+}
+
 void Drivetrain::setMicrostep(bool state) {
     if (state) {
         digitalWrite(MICROSTEP, HIGH);

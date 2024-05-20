@@ -13,6 +13,7 @@
 #include <math.h>
 #include <Adafruit_BNO055.h>
 #include <Pathfinding.h>
+#include <HCSR04.h>
 
 #include <Definitions.h>
 
@@ -29,8 +30,15 @@ adafruit_bno055_offsets_t bno_offsets;
 int lastButtonState = HIGH;
 int buttonState;
 
+bool flipped = false;
+
+float temperature = 20;
+
 unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
+
+int dx[4] = {0, 1, 0, -1};
+int dy[4] = {1, 0, -1, 0};
 
 AccelStepper y_stepper1 = AccelStepper(motorInterfaceType, Y1_STEP, 2);
 AccelStepper y_stepper2 = AccelStepper(motorInterfaceType, Y2_STEP, 2);
@@ -86,6 +94,7 @@ void setup() {
 
     TelnetStream.begin();
   #endif
+  HCSR04.begin(TRIG_PIN, ECHO_PIN);
 
   pinMode(SLEEP1, OUTPUT);
   pinMode(SLEEP2, OUTPUT);
@@ -160,6 +169,8 @@ void setup() {
 
   path = pathfinding.getPath();
 
+  temperature = 20;
+
   delay(5000);
 
   PRINTER.println("Setup Complete");
@@ -184,6 +195,7 @@ std::vector<std::string> split(const std::string& s, char c) {
 void run() {
   for(std::string &s : path) {
     if(s[0] == 't') {
+      // drivetrain.driveDistance((flipped ? -1 : 1) * std::stoi(s.substr(1)), false);
       drivetrain.driveDistance(std::stoi(s.substr(1)), false);
       // Serial.println("Drive distance");
     }
@@ -195,14 +207,13 @@ void run() {
     }
     else if(s[0] == 'a') {
       drivetrain.turnAround();
+      // flipped = !flipped;
     }
   }
-  // drivetrain.driveDistance(50, false);
-  // drivetrain.driveDistance(-50, false);
+  // double* distances = HCSR04.measureDistanceCm(temperature); 
+  // drivetrain.driveDistance(distances[0] - #, false);
   // drivetrain.turnRight();
-  // drivetrain.turnRight();
-  // drivetrain.turnRight();
-  // drivetrain.turnRight();
+  // drivetrain.driveDistance(distances[0] - #, false);
 }
 
 void loop() {
