@@ -60,7 +60,7 @@ void Pathfinding::findPath() {
     tt = vis[tt.first][tt.second];
   }
   short a, b, c, d;
-  short dist = 36;
+  short dist = 34;
   short dir = 0, ndir = 0; // 0 up 1 right 2 down 3 left
   for(short i = coords.size() - 2; i >= 0; i--) {
     a = coords[i + 1] / N;
@@ -89,9 +89,10 @@ void Pathfinding::findPath() {
         path.push_back("l");
       }
       else {
-        path.push_back("r");
-        path.push_back("r");
-        // path.push_back("a");
+        // path.push_back("r");
+        // path.push_back("r");
+        path.push_back("a");
+        // dist = -dist;
       }
       dir = ndir;
     }
