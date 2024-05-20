@@ -128,7 +128,7 @@ void setup() {
 
   adafruit_bno055_offsets_t calibrationData;
   #ifdef SAVE_CALIBRATION
-    while (!(system == 3 && gyro == 3 && mag == 3)) {
+    while (!(system == 3 && accel == 3 && gyro == 3 && mag == 3)) {
       digitalWrite(2, HIGH);
       drivetrain.bno.getCalibration(&system, &gyro, &accel, &mag);
       PRINTER.printf("Sys: %d, Gyro: %d, Accel: %d, Mag: %d\n", system, gyro, accel, mag);
@@ -182,6 +182,7 @@ void setup() {
   path = pathfinding.getPath();
 
   temperature = 20;
+  // temperature = bno.getTemp();
 
   delay(5000);
 
