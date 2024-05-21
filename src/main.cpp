@@ -128,10 +128,11 @@ void setup() {
 
   adafruit_bno055_offsets_t calibrationData;
   #ifdef SAVE_CALIBRATION
-    while (!(system == 3 && accel == 3 && gyro == 3 && mag == 3)) {
+    while (!(system == 3 && gyro == 3 && mag == 3)) {
       digitalWrite(2, HIGH);
       drivetrain.bno.getCalibration(&system, &gyro, &accel, &mag);
-      PRINTER.printf("Sys: %d, Gyro: %d, Accel: %d, Mag: %d\n", system, gyro, accel, mag);
+      double temp = bno.getTemp();
+      PRINTER.printf("Sys: %d, Gyro: %d, Accel: %d, Mag: %d Temp: %d\n", system, gyro, accel, mag);
       delay(2000);
       digitalWrite(2, LOW);
     }
@@ -150,7 +151,7 @@ void setup() {
   #endif
 
   // CHANGE THIS:
-  pathfinding.setStart(3);
+  pathfinding.setStart(0);
   pathfinding.setTarget({1, 3});
 
   std::vector<std::string> vblocks, hblocks;
@@ -181,8 +182,9 @@ void setup() {
 
   path = pathfinding.getPath();
 
-  temperature = 20;
+  temperature = 24;
   // temperature = bno.getTemp();
+  PRINTER.println(temperature);
 
   delay(5000);
 
@@ -223,10 +225,12 @@ void run() {
       // flipped = !flipped;
     }
   }
-  // double* distances = HCSR04.measureDistanceCm(temperature); 
-  // drivetrain.driveDistance(distances[0] - #, false);
-  // drivetrain.turnRight();
-  // drivetrain.driveDistance(distances[0] - #, false);
+  drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
+  double* distances = HCSR04.measureDistanceCm(temperature); 
+  drivetrain.driveDistance(distances[0] - 17, false);
+  drivetrain.turnRight();
+  drivetrain.driveDistance(distances[0] - 25, false);
+  // drivetrain.driveDistance(200, false);
 }
 
 void loop() {

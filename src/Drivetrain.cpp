@@ -13,7 +13,7 @@ void Drivetrain::stepperSleep() {
 }
 
 void Drivetrain::driveDistance(double pdist, bool horizontal) { // TO-DO: CONVERT DIST TO STEPS
-    int dist = (int)(pdist * stepsPerRev / (PI * WHEELDIAMETER));
+    int dist = (int)(pdist * stepsPerRev * (200/195) / (PI * WHEELDIAMETER));
     digitalWrite(SLEEP1, HIGH);
     y_stepper1.move(dist);
     if(dist > 0) {

@@ -1,6 +1,6 @@
 // #define USING_TELNET 1
 
-// #define SAVE_CALIBRATION
+#define SAVE_CALIBRATION
 
 #ifdef USING_TELNET
   #include <Arduino.h>
