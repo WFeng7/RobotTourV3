@@ -113,6 +113,39 @@ void Pathfinding::findPath() {
         path.push_back("t" + std::to_string(dist));
       }
       dist = 50;
+      // get distance
+      int extra_dist = -1;
+      if(dir == 0) {
+        for(int j = b + 1; j < N; j++) {
+          if(wood[a * N + j - 1][a * N + j]) {
+            extra_dist = j - b;
+          }
+        }
+      }
+      else if(dir == 2) {
+        for(int j = b - 1; j >= 0; j--) {
+          if(wood[a * N + j + 1][a * N + j]) {
+            extra_dist = b - j;
+          }
+        }
+      }
+      else if(dir == 1) {
+         for(int j = a + 1; a < N; a++) {
+          if(wood[(j - 1) * N + b][j * N + b]) {
+            extra_dist = j - a;
+          }
+         }
+      }
+      else {
+        for(int j = a - 1; a >= 0; a--) {
+          if(wood[(j + 1) * N + b][j * N + b]) {
+            extra_dist = a - j;
+          }
+        }
+      }
+      if(extra_dist != -1) {
+        path.push_back("c" + std::to_string(extra_dist * 50 - 25));
+      }
       if(ndir - dir == 1 || ndir - dir == -3) {
         path.push_back("r");
       }

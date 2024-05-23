@@ -205,6 +205,9 @@ void run() {
     if(s[0] == 't') {
       drivetrain.driveDistance(std::stoi(s.substr(1)), false);
     }
+    else if(s[0] == 'c') {
+      drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - std::stoi(s.substr(1)), false);
+    }
     else if(s[0] == 'r') {
       drivetrain.turnRight();
     }
