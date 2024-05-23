@@ -105,7 +105,13 @@ void Pathfinding::findPath() {
       ndir = 3;
     } 
     if(dir != ndir) {
-      path.push_back("t" + std::to_string(dist));
+      if(dist > 100) {
+        path.push_back("t" + std::to_string(100));
+        path.push_back("t" + std::to_string(dist - 100));
+      }
+      else {
+        path.push_back("t" + std::to_string(dist));
+      }
       dist = 50;
       if(ndir - dir == 1 || ndir - dir == -3) {
         path.push_back("r");
@@ -114,9 +120,9 @@ void Pathfinding::findPath() {
         path.push_back("l");
       }
       else {
-        // path.push_back("r");
-        // path.push_back("r");
-        path.push_back("a");
+        path.push_back("r");
+        path.push_back("r");
+        // path.push_back("a");
         // dist = -dist;
       }
       dir = ndir;
@@ -126,7 +132,13 @@ void Pathfinding::findPath() {
     }
   }
   if(dist != 0) {
-    path.push_back("t" + std::to_string(dist));
+    if(dist > 100) {
+      path.push_back("t" + std::to_string(100));
+      path.push_back("t" + std::to_string(dist - 100));
+    }
+    else {
+      path.push_back("t" + std::to_string(dist));
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 // #define USING_TELNET 1
 
-#define SAVE_CALIBRATION
+// #define SAVE_CALIBRATION
 
 #ifdef USING_TELNET
   #include <Arduino.h>
@@ -59,3 +59,7 @@
 
 #define ECHO_PIN 18
 #define TRIG_PIN 5
+
+#define RED_PIN 33 //orange
+#define GREEN_PIN 27 //brown
+#define BLUE_PIN 26 //purple

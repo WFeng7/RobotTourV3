@@ -7,6 +7,7 @@
 #include <PIDController.h>
 #include <Adafruit_BNO055.h>
 #include <Definitions.h>
+#include <HCSR04.h>
 
 class Drivetrain {
     private: 
@@ -20,7 +21,7 @@ class Drivetrain {
 
     public:
         PIDController pid = PIDController(TURN_KP, TURN_KI, TURN_KD, TURN_DT);
-        volatile float sharedYaw = 0.0;
+        double sharedYaw = 0.0;
         double yawOffset = 0;
         float frequency = 100.0;
         Adafruit_BNO055 bno;
@@ -38,7 +39,9 @@ class Drivetrain {
         void turnAround();
         void correctWithGyro(double angle, double ROBOTDIAMETER);
 
-        float getYaw();
+        void moveUntilSensor(double target, double temp);
+
+        double getYaw();
         void updateYaw();
         void zeroYaw();
 };

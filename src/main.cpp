@@ -19,6 +19,8 @@
 
 #include <EEPROM.h>
 
+#include <LED.h>
+
 // Global Variables
 
 int t = 0;
@@ -32,13 +34,15 @@ int buttonState;
 
 bool flipped = false;
 
-float temperature = 20;
+double temperature = 20;
 
 unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
 
 int dx[4] = {0, 1, 0, -1};
 int dy[4] = {1, 0, -1, 0};
+
+int extra_time = 0;
 
 AccelStepper y_stepper1 = AccelStepper(motorInterfaceType, Y1_STEP, 2);
 AccelStepper y_stepper2 = AccelStepper(motorInterfaceType, Y2_STEP, 2);
@@ -50,6 +54,10 @@ Pathfinding pathfinding = Pathfinding();
 std::vector<std::string> path;
 
 Drivetrain drivetrain = Drivetrain(&y_stepper1, &y_stepper2, &bno);
+
+LED led;
+
+bool button_pressed = false;
 
 // Telnet
 const long gmtOffset_sec = 3600;
@@ -65,7 +73,11 @@ void setup() {
   Serial.begin(115200);
 
   Wire.begin();
-  delay(2000);
+  led.begin(RED_PIN, GREEN_PIN, BLUE_PIN);
+
+  led.rainbow(true);
+
+  usleep(2000*1000);
   Serial.println("Setup");
 
   #ifdef USING_TELNET
@@ -74,14 +86,14 @@ void setup() {
     if (WiFi.waitForConnectResult() != WL_CONNECTED) {
       Serial.println("WiFi Failed!");
       while (1) {
-        delay(10);
+        usleep(10*1000);
       }
     }
 
     configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org");
     time_t now = time(nullptr);
     while (now < SECS_YR_2000) {
-      delay(100);
+      usleep(100*1000);
       now = time(nullptr);
     }
     setTime(now);
@@ -128,13 +140,12 @@ void setup() {
 
   adafruit_bno055_offsets_t calibrationData;
   #ifdef SAVE_CALIBRATION
+    led.rainbow(false);
     while (!(system == 3 && gyro == 3 && mag == 3)) {
-      digitalWrite(2, HIGH);
       drivetrain.bno.getCalibration(&system, &gyro, &accel, &mag);
       double temp = bno.getTemp();
       PRINTER.printf("Sys: %d, Gyro: %d, Accel: %d, Mag: %d Temp: %d\n", system, gyro, accel, mag);
-      delay(2000);
-      digitalWrite(2, LOW);
+      usleep(500*1000);
     }
     drivetrain.bno.getSensorOffsets(calibrationData);
     for (unsigned int i = 0; i < sizeof(calibrationData); i++) {
@@ -151,30 +162,26 @@ void setup() {
   #endif
 
   // CHANGE THIS:
-  pathfinding.setStart(0);
+  pathfinding.setStart(3);
   pathfinding.setTarget({1, 3});
 
   std::vector<std::string> vblocks, hblocks;
-  pathfinding.addGate("0 1");
-  pathfinding.addGate("2 0");
-  pathfinding.addGate("3 0");
-  pathfinding.addGate("3 3");
-  // pathfinding.addWood(0, 0, 0, 1);
-  // pathfinding.addWood(0, 1, 1, 1);
-  // pathfinding.addWood(1, 3, 1, 2);
-  // pathfinding.addWood(1, 3, 2, 3);
-  // pathfinding.addWood(1, 0, 2, 0);
-  // pathfinding.addWood(2, 0, 3, 0);
-  // pathfinding.addWood(2, 1, 3, 1);
-  // pathfinding.addWood(3, 2, 3, 3);
+  pathfinding.addGate("1 0");
+  pathfinding.addGate("0 2");
+  pathfinding.addGate("2 3");
+  // pathfinding.addGate("3 3");
   vblocks.push_back("010");
-  vblocks.push_back("000");
-  vblocks.push_back("101");
-  vblocks.push_back("011");
+  vblocks.push_back("100");
+  vblocks.push_back("001");
+  vblocks.push_back("010");
 
-  hblocks.push_back("0101");
   hblocks.push_back("0000");
-  hblocks.push_back("1000");
+  hblocks.push_back("1110");
+  hblocks.push_back("0100");
+
+  temperature = 23;
+
+  extra_time = 8000;
 
   pathfinding.addBlocks(vblocks, hblocks);
 
@@ -182,37 +189,21 @@ void setup() {
 
   path = pathfinding.getPath();
 
-  temperature = 24;
   // temperature = bno.getTemp();
-  PRINTER.println(temperature);
+  PRINTER.println(temperatureRead());
 
-  delay(5000);
+  usleep(5000*1000);
 
   PRINTER.println("Setup Complete");
-}
 
-std::vector<std::string> split(const std::string& s, char c) {
-  std::vector<std::string> result;
-  size_t begin = 0;
-  while (true) {
-    size_t end = s.find_first_of(c, begin);
-    result.push_back(s.substr(begin, end - begin));
-
-    if (end == std::string::npos) {
-      break;
-    }
-
-    begin = end + 1;
-  }
-  return result;
+  led.rainbow(false);
+  led.setGreen();
 }
 
 void run() {
   for(std::string &s : path) {
     if(s[0] == 't') {
-      // drivetrain.driveDistance((flipped ? -1 : 1) * std::stoi(s.substr(1)), false);
       drivetrain.driveDistance(std::stoi(s.substr(1)), false);
-      // Serial.println("Drive distance");
     }
     else if(s[0] == 'r') {
       drivetrain.turnRight();
@@ -222,31 +213,48 @@ void run() {
     }
     else if(s[0] == 'a') {
       drivetrain.turnAround();
-      // flipped = !flipped;
     }
+    delay(extra_time/((int)path.size()));
   }
   drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
-  double* distances = HCSR04.measureDistanceCm(temperature); 
-  drivetrain.driveDistance(distances[0] - 17, false);
+  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 3, false);
   drivetrain.turnRight();
-  drivetrain.driveDistance(distances[0] - 25, false);
+  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 75 + 4, false);
   // drivetrain.driveDistance(200, false);
+  // drivetrain.correctWithGyro(0, 24.13);
 }
 
 void loop() {
   digitalWrite(2, HIGH);
   int reading = digitalRead(BUTTON_PIN);
+  delay(10);
 
   if(reading == LOW) {
-    drivetrain.resetOrientation();
-    PRINTER.printf("Pre-zero: %f\n", drivetrain.getYaw());
-    drivetrain.zeroYaw();
-    PRINTER.printf("Post-zero: %f\n", drivetrain.getYaw());
-    PRINTER.print("OK");
-    delay(2000);
-    run();
-    drivetrain.stepperSleep();
-    digitalWrite(2, LOW);
-    delay(1000);
+    button_pressed = true;
+    led.setBlue();
+  }
+  else {
+    if (reading == HIGH && button_pressed) {
+      button_pressed = false;
+
+      drivetrain.resetOrientation();
+      PRINTER.printf("Pre-zero: %f\n", drivetrain.getYaw());
+      double pre = drivetrain.getYaw();
+      drivetrain.zeroYaw();
+      PRINTER.printf("Post-zero: %f\n", drivetrain.getYaw());
+      double post = drivetrain.getYaw();
+      PRINTER.print("OK");
+
+      led.setYellow();
+
+      delay(2000);
+
+      led.setRed();
+      run();
+
+      drivetrain.stepperSleep();
+      digitalWrite(2, LOW);
+      led.setGreen();
+    }
   }
 }

@@ -55,6 +55,7 @@
         "numbers": "cpp",
         "arduino_mpu9250_log.cpp": "c",
         "set": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "thread": "cpp"
     }
 }
