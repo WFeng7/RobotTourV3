@@ -31,7 +31,7 @@ void Drivetrain::driveDistance(double pdist, bool horizontal) { // TO-DO: CONVER
     y_stepper1.setAcceleration(NOMINAL_ACCELERATION);
     y_stepper1.runToPosition();
     // correctWithGyro(orientation, 24.13);
-    delay(250);
+    delay(10);
 }
 
 void Drivetrain::driveTiles(double tiles, bool horizontal) {
@@ -148,7 +148,7 @@ void Drivetrain::correctWithGyro(double angle, double ROBOTDIAMETER) {
         yaw = getYaw();
     }
     y_stepper1.setCurrentPosition(0);
-    delay(250);
+    delay(10);
     setMicrostep(false);
     stepperSleep();
 }

@@ -114,37 +114,21 @@ void Pathfinding::findPath() {
       }
       dist = 50;
       // get distance
-      int extra_dist = -1;
-      if(dir == 0) {
-        for(int j = b + 1; j < N; j++) {
-          if(wood[a * N + j - 1][a * N + j]) {
-            extra_dist = j - b;
-          }
-        }
+      bool extra_dist = false;
+      if(dir == 0 && a < N && wood[a * N + b][a * N + b + 1]) {
+        extra_dist = true;
       }
-      else if(dir == 2) {
-        for(int j = b - 1; j >= 0; j--) {
-          if(wood[a * N + j + 1][a * N + j]) {
-            extra_dist = b - j;
-          }
-        }
+      else if(dir == 2 && b > 0 && wood[a * N + b - 1][a * N + b]) {
+        extra_dist = true;
       }
-      else if(dir == 1) {
-         for(int j = a + 1; a < N; a++) {
-          if(wood[(j - 1) * N + b][j * N + b]) {
-            extra_dist = j - a;
-          }
-         }
+      else if(dir == 1 && a < N && wood[(a + 1) * N + b][a * N + b]) {
+         extra_dist = true;
       }
-      else {
-        for(int j = a - 1; a >= 0; a--) {
-          if(wood[(j + 1) * N + b][j * N + b]) {
-            extra_dist = a - j;
-          }
-        }
+      else if(dir == 3 && a > 0 && wood[(a - 1) * N + b][a * N + b]) {
+         extra_dist = true;
       }
-      if(extra_dist != -1) {
-        path.push_back("c" + std::to_string(extra_dist * 50 - 25));
+      if(extra_dist) {
+        path.push_back("c");
       }
       if(ndir - dir == 1 || ndir - dir == -3) {
         path.push_back("r");

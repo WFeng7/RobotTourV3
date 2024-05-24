@@ -181,7 +181,8 @@ void setup() {
 
   temperature = 23;
 
-  extra_time = 8000;
+  extra_time = 0;
+  extra_time *= 1000;
 
   pathfinding.addBlocks(vblocks, hblocks);
 
@@ -202,11 +203,15 @@ void setup() {
 
 void run() {
   for(std::string &s : path) {
+    PRINTER.print(s.c_str());
+    PRINTER.print('\n');
+  }
+  for(std::string &s : path) {
     if(s[0] == 't') {
       drivetrain.driveDistance(std::stoi(s.substr(1)), false);
     }
     else if(s[0] == 'c') {
-      drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - std::stoi(s.substr(1)), false);
+      drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false); // remember to add offset from half of the wood block; measure it
     }
     else if(s[0] == 'r') {
       drivetrain.turnRight();
@@ -220,9 +225,9 @@ void run() {
     delay(extra_time/((int)path.size()));
   }
   drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
-  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 3, false);
+  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false);
   drivetrain.turnRight();
-  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 75 + 4, false);
+  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 75 + 1.75, false);
   // drivetrain.driveDistance(200, false);
   // drivetrain.correctWithGyro(0, 24.13);
 }
