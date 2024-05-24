@@ -6,7 +6,7 @@ Drivetrain::Drivetrain(AccelStepper* y_stepper1, AccelStepper* y_stepper2, Adafr
     y_stepper2(*y_stepper2),
     bno(*bno) {
         pid.EnableContinuousInput(-180, 180);
-        pid.SetTolerance(0.01, 0.01);
+        pid.SetTolerance(0.05, 0.05);
     }
 
 void Drivetrain::stepperSleep() {
@@ -16,7 +16,8 @@ void Drivetrain::stepperSleep() {
 }
 
 void Drivetrain::driveDistance(double pdist, bool horizontal) { // TO-DO: CONVERT DIST TO STEPS
-    int dist = (int)(pdist * stepsPerRev * (200/195 * 200/193 * 50/(50-2.5)) / (PI * WHEELDIAMETER));
+    correctWithGyro(orientation, 24.13);
+    int dist = (int)(pdist * stepsPerRev) / (PI * WHEELDIAMETER);
     digitalWrite(SLEEP1, HIGH);
     y_stepper1.move(dist);
     if(dist > 0) {
@@ -30,7 +31,7 @@ void Drivetrain::driveDistance(double pdist, bool horizontal) { // TO-DO: CONVER
     y_stepper1.setMaxSpeed(NOMINAL_SPEED);
     y_stepper1.setAcceleration(NOMINAL_ACCELERATION);
     y_stepper1.runToPosition();
-    // correctWithGyro(orientation, 24.13);
+    correctWithGyro(orientation, 24.13);
     delay(10);
 }
 
@@ -53,6 +54,10 @@ void Drivetrain::moveUntilSensor(double target, double temp) {
     }
 }
 
+void Drivetrain::applyRollingAverage(double yaw) {
+    
+}
+
 void Drivetrain::updateYaw() {
     imu::Quaternion quat = bno.getQuat();
 
@@ -65,15 +70,15 @@ void Drivetrain::updateYaw() {
 
     yaw = yaw * 180 / PI;
 
-    // sharedYaw = yaw + yawOffset;
     sharedYaw = yaw;
+    // sharedYaw = yaw;
     // if (sharedYaw > 180) {
-    //     float prev = sharedYaw;
+    //     double prev = sharedYaw;
     //     sharedYaw -= 360;
     //     PRINTER.printf("%f > 180, Adjusted to: %f\n", prev, -1*sharedYaw);
     // }
     // else if (sharedYaw < -180) {
-    //     float prev = sharedYaw;
+    //     double prev = sharedYaw;
     //     sharedYaw += 360;
     //     PRINTER.printf("%f < 180, Adjusted to: %f\n", prev, -1*sharedYaw);
     // }
@@ -87,7 +92,7 @@ double Drivetrain::getYaw() {
 void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
     double full_dist = (stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER));
     int dist = (int)(stepsPerRev * (ROBOTDIAMETER * PI * angle/360)/(PI * WHEELDIAMETER));
-    int microstep_dist = (int)((full_dist - dist) * microstepMultiplier);
+    // int microstep_dist = (int)((full_dist - dist) * microstepMultiplier);
 
     digitalWrite(SLEEP1, HIGH);
     digitalWrite(SLEEP2, HIGH);
@@ -101,14 +106,15 @@ void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
         digitalWrite(Y2_DIR, LOW);
     }
     y_stepper1.setMaxSpeed(MAXTURNSPEED);
-    y_stepper1.setAcceleration(MAXTURNACCELERATION );
+    y_stepper1.setAcceleration(MAXTURNACCELERATION);
     Serial.println("FULL STEP");
     y_stepper1.runToPosition();
-    Serial.println("MICROSTEP");
-    setMicrostep(true);
-    y_stepper1.move(microstep_dist);
-    y_stepper1.runToPosition();
-    setMicrostep(false);
+    // delay(50);
+    // Serial.println("MICROSTEP");
+    // setMicrostep(true);
+    // y_stepper1.move(microstep_dist);
+    // y_stepper1.runToPosition();
+    // setMicrostep(false);
 
     orientation += angle;
     if (orientation > 180) {
@@ -120,17 +126,23 @@ void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
 }
 
 void Drivetrain::correctWithGyro(double angle, double ROBOTDIAMETER) {
-    // pid.Reset();
+    pid.Reset();
     pid.SetSetpoint(angle);
     setMicrostep(true);
-    float yaw = getYaw();
+    double yaw = getYaw();
     long startTime = millis();
     long onTargetStartTime = millis();
+    double output = 0.1;
+
+    double avg = 0;
+    double c = 0;
     // y_stepper1.move(100000);
     // y_stepper1.setCurrentPosition(0));
     PRINTER.println(pid.AtSetpoint());
-    while (!pid.AtSetpoint() && millis() - startTime < 5000){
-        double output = pid.Calculate(yaw);
+    while (!pid.AtSetpoint()){
+        double s = millis();
+        yaw = getYaw();
+        output = pid.Calculate(yaw);
         if(output > 0) {
             digitalWrite(Y1_DIR, HIGH);
             digitalWrite(Y2_DIR, HIGH);
@@ -144,42 +156,123 @@ void Drivetrain::correctWithGyro(double angle, double ROBOTDIAMETER) {
         double targetStepsPerSecond = (output * stepsPerRev * (ROBOTDIAMETER * PI) / 360) / (PI * WHEELDIAMETER);
         y_stepper1.setSpeed(targetStepsPerSecond* 16);
         y_stepper1.runSpeed();
-        PRINTER.printf("Target: %f Current: %f\n", angle, yaw);
-        yaw = getYaw();
+        double end = millis();
+        PRINTER.printf("Target: %f Current: %f DT: %f\n", angle, yaw, end - s);
+
+        avg += end - s;
+        c++;
     }
+
+    PRINTER.println(avg/c);
     y_stepper1.setCurrentPosition(0);
-    delay(10);
     setMicrostep(false);
-    stepperSleep();
+    // stepperSleep();
+
+    // double yaw = getYaw();
+    // double targetTurn = angle - yaw;
+
+    // if (targetTurn > 180) {
+    //     targetTurn -= 360;
+    // }
+    // else if (targetTurn < -180) {
+    //     targetTurn + 360;
+    // }
+
+    // setMicrostep(true);
+    // double full_dist = (stepsPerRev * (ROBOTDIAMETER * PI * targetTurn/360)/(PI * WHEELDIAMETER));
+    // int dist = (int)(stepsPerRev * (ROBOTDIAMETER * PI * targetTurn/360)/(PI * WHEELDIAMETER));
+
+    // full_dist *= microstepMultiplier;
+
+    // digitalWrite(SLEEP1, HIGH);
+    // digitalWrite(SLEEP2, HIGH);
+    // y_stepper1.move(full_dist);
+    // if(full_dist > 0) {
+    //     digitalWrite(Y1_DIR, HIGH);
+    //     digitalWrite(Y2_DIR, HIGH);
+    // }
+    // else {
+    //     digitalWrite(Y1_DIR, LOW);
+    //     digitalWrite(Y2_DIR, LOW);
+    // }
+    // y_stepper1.setMaxSpeed(MAXTURNSPEED);
+    // y_stepper1.setAcceleration(MAXTURNACCELERATION);
+    // Serial.println("FULL STEP");
+    // y_stepper1.runToPosition();
+    // setMicrostep(false);
+
+    // yaw = getYaw();
+    // targetTurn = angle - yaw;
+
+    // if (targetTurn > 180) {
+    //     targetTurn -= 360;
+    // }
+    // else if (targetTurn < -180) {
+    //     targetTurn + 360;
+    // }
+
+    // setMicrostep(true);
+    // full_dist = (stepsPerRev * (ROBOTDIAMETER * PI * targetTurn/360)/(PI * WHEELDIAMETER));
+    // dist = (int)(stepsPerRev * (ROBOTDIAMETER * PI * targetTurn/360)/(PI * WHEELDIAMETER));
+
+    // full_dist *= microstepMultiplier;
+
+    // digitalWrite(SLEEP1, HIGH);
+    // digitalWrite(SLEEP2, HIGH);
+    // y_stepper1.move(full_dist);
+    // if(full_dist > 0) {
+    //     digitalWrite(Y1_DIR, HIGH);
+    //     digitalWrite(Y2_DIR, HIGH);
+    // }
+    // else {
+    //     digitalWrite(Y1_DIR, LOW);
+    //     digitalWrite(Y2_DIR, LOW);
+    // }
+    // y_stepper1.setMaxSpeed(MAXTURNSPEED);
+    // y_stepper1.setAcceleration(MAXTURNACCELERATION);
+    // Serial.println("FULL STEP");
+    // y_stepper1.runToPosition();
+    // setMicrostep(false);
 }
 
 void Drivetrain::zeroYaw() {
     // yawOffset = 0.0;
-    // float yaw = getYaw();
+    // double yaw = getYaw();
     // yawOffset = yaw;
-    PRINTER.println("FAKE ZERO");
+    return;
 }
 
 void Drivetrain::turnRight() {
     double startYaw = getYaw();
-    turn(90, 19.5);
+    turn(90, 20);
     double correctionAngle = orientation;
     Serial.println(correctionAngle);
+    PRINTER.printf("Yaw Difference: %f", orientation - getYaw());
+    // delay(50);
     correctWithGyro(correctionAngle, 24.13);
+    // correctWithGyro(correctionAngle, 24.13);
 }
 
 void Drivetrain::turnLeft() {
     double startYaw = getYaw();
-    turn(-90, 19.5);
+    turn(-90, 20);
     double correctionAngle = orientation;
+    Serial.println(correctionAngle);
+    PRINTER.printf("Yaw Difference: %f", orientation - getYaw());
+    // delay(50);
     correctWithGyro(correctionAngle, 24.13);
+    // correctWithGyro(correctionAngle, 24.13);
 }
 
 void Drivetrain::turnAround() {
     double startYaw = getYaw();
-    turn(180, 19);
+    turn(180, 20);
     double correctionAngle = orientation;
+    Serial.println(correctionAngle);
+    PRINTER.printf("Yaw Difference: %f", orientation - getYaw());
+    // delay(50);
     correctWithGyro(correctionAngle, 24.13);
+    // correctWithGyro(correctionAngle, 24.13);
 }
 
 void Drivetrain::resetOrientation() {

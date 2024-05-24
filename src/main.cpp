@@ -162,21 +162,22 @@ void setup() {
   #endif
 
   // CHANGE THIS:
-  pathfinding.setStart(3);
-  pathfinding.setTarget({1, 3});
+  pathfinding.setStart(0);
+  pathfinding.setTarget({1, 0});
 
   std::vector<std::string> vblocks, hblocks;
-  pathfinding.addGate("1 0");
-  pathfinding.addGate("0 2");
-  pathfinding.addGate("2 3");
+  pathfinding.addGate("0 1");
+  pathfinding.addGate("1 2");
+  pathfinding.addGate("3 2");
+  pathfinding.addGate("3 1");
   // pathfinding.addGate("3 3");
+  vblocks.push_back("000");
   vblocks.push_back("010");
-  vblocks.push_back("100");
-  vblocks.push_back("001");
-  vblocks.push_back("010");
+  vblocks.push_back("101");
+  vblocks.push_back("000");
 
-  hblocks.push_back("0000");
-  hblocks.push_back("1110");
+  hblocks.push_back("0101");
+  hblocks.push_back("0101");
   hblocks.push_back("0100");
 
   temperature = 23;
@@ -202,34 +203,42 @@ void setup() {
 }
 
 void run() {
-  for(std::string &s : path) {
-    PRINTER.print(s.c_str());
-    PRINTER.print('\n');
-  }
-  for(std::string &s : path) {
-    if(s[0] == 't') {
-      drivetrain.driveDistance(std::stoi(s.substr(1)), false);
-    }
-    else if(s[0] == 'c') {
-      drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false); // remember to add offset from half of the wood block; measure it
-    }
-    else if(s[0] == 'r') {
-      drivetrain.turnRight();
-    }
-    else if(s[0] == 'l') {
-      drivetrain.turnLeft();
-    }
-    else if(s[0] == 'a') {
-      drivetrain.turnAround();
-    }
-    delay(extra_time/((int)path.size()));
-  }
-  drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
-  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false);
+  // for(std::string &s : path) {
+  //   if(s[0] == 't') {
+  //     drivetrain.driveDistance(std::stod(s.substr(1)), false);
+  //   }
+  //   else if(s[0] == 'c') {
+  //     // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false); // remember to add offset from half of the wood block; measure it
+  //   }
+  //   else if(s[0] == 'r') {
+  //     drivetrain.turnRight();
+  //   }
+  //   else if(s[0] == 'l') {
+  //     drivetrain.turnLeft();
+  //   }
+  //   else if(s[0] == 'a') {
+  //     drivetrain.turnAround();
+  //   }
+  //   delay(extra_time/((int)path.size()));
+  // }
+  // drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
+  // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false);
+  // drivetrain.turnRight();
+  // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 25 + 1.75, false);
+
+  // drivetrain.driveDistance(37, false);
+  // drivetrain.driveDistance(50.5, false);
+  // drivetrain.turnRight();
+  // drivetrain.driveDistance(50.5, false);
+  // drivetrain.turnRight();
+  // drivetrain.driveDistance(50.5, false);
+  // drivetrain.turnRight();
+  // drivetrain.driveDistance(50.5, false);
+  // drivetrain.turnRight();
+
   drivetrain.turnRight();
-  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 75 + 1.75, false);
-  // drivetrain.driveDistance(200, false);
-  // drivetrain.correctWithGyro(0, 24.13);
+  delay(500);
+  PRINTER.println(drivetrain.getYaw());
 }
 
 void loop() {
@@ -252,6 +261,16 @@ void loop() {
       PRINTER.printf("Post-zero: %f\n", drivetrain.getYaw());
       double post = drivetrain.getYaw();
       PRINTER.print("OK");
+
+      while (!drivetrain.bno.begin(OPERATION_MODE_NDOF)) {
+        PRINTER.println("Failed to initialize IMU!");
+      }
+
+      // led.rainbow(true);
+      drivetrain.bno.enterNormalMode();
+      drivetrain.bno.setExtCrystalUse(true);
+      drivetrain.bno.enableAutoRange(true);
+      // led.rainbow(false);
 
       led.setYellow();
 

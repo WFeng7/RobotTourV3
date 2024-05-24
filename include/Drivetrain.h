@@ -44,6 +44,8 @@ class Drivetrain {
         double getYaw();
         void updateYaw();
         void zeroYaw();
+
+        double applyRollingAverage(double yaw);
 };
 
 #endif

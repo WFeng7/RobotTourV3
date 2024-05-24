@@ -85,7 +85,7 @@ void Pathfinding::findPath() {
     tt = vis[tt.first][tt.second];
   }
   short a, b, c, d;
-  short dist = 34;
+  short dist = 37;
   short dir = 0, ndir = 0; // 0 up 1 right 2 down 3 left
   for(short i = coords.size() - 2; i >= 0; i--) {
     a = coords[i + 1] / N;
@@ -105,12 +105,13 @@ void Pathfinding::findPath() {
       ndir = 3;
     } 
     if(dir != ndir) {
-      if(dist > 100) {
-        path.push_back("t" + std::to_string(100));
-        path.push_back("t" + std::to_string(dist - 100));
+      if(dist % 10 == 7) {
+        path.push_back("t" + std::to_string(37));
+        dist -= 37;
       }
-      else {
-        path.push_back("t" + std::to_string(dist));
+      while(dist >= 50) {
+        path.push_back("t" + std::to_string(50.5));
+        dist -= 50;
       }
       dist = 50;
       // get distance
@@ -148,14 +149,13 @@ void Pathfinding::findPath() {
       dist += 50;
     }
   }
-  if(dist != 0) {
-    if(dist > 100) {
-      path.push_back("t" + std::to_string(100));
-      path.push_back("t" + std::to_string(dist - 100));
-    }
-    else {
-      path.push_back("t" + std::to_string(dist));
-    }
+  if(dist % 10 == 7) {
+    path.push_back("t" + std::to_string(37));
+    dist -= 37;
+  }
+  while(dist >= 50) {
+    path.push_back("t" + std::to_string(50.5));
+    dist -= 50;
   }
 }
 
