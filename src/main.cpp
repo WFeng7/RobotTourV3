@@ -180,9 +180,9 @@ void setup() {
   hblocks.push_back("0101");
   hblocks.push_back("0100");
 
-  temperature = 23;
+  temperature = 24;
 
-  extra_time = 0;
+  extra_time = 25;
   extra_time *= 1000;
 
   pathfinding.addBlocks(vblocks, hblocks);
@@ -208,7 +208,7 @@ void run() {
       drivetrain.driveDistance(std::stod(s.substr(1)), false);
     }
     else if(s[0] == 'c') {
-      // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false); // remember to add offset from half of the wood block; measure it
+      drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false); // remember to add offset from half of the wood block; measure it
     }
     else if(s[0] == 'r') {
       drivetrain.turnRight();
@@ -221,10 +221,11 @@ void run() {
     }
     delay(extra_time/((int)path.size()));
   }
-  // drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
+  // drivetrain.driveDistance(7, false);
+  drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
   // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false);
-  // drivetrain.turnRight();
-  // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 25 + 1.75, false);
+  drivetrain.turnRight();
+  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 25 + 0.75, false);
 
   // drivetrain.driveDistance(37, false);
   // drivetrain.driveDistance(50.5, false);
@@ -237,8 +238,8 @@ void run() {
   // drivetrain.turnRight();
 
   // drivetrain.turnRight();
-  delay(500);
-  PRINTER.println(drivetrain.getYaw());
+  // delay(500);
+  // PRINTER.println(drivetrain.getYaw());
 }
 
 void loop() {
