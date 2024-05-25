@@ -43,6 +43,8 @@ int dx[4] = {0, 1, 0, -1};
 int dy[4] = {1, 0, -1, 0};
 
 int extra_time = 0;
+int predicted_time = 0;
+int target_time = 0;
 
 AccelStepper y_stepper1 = AccelStepper(motorInterfaceType, Y1_STEP, 2);
 AccelStepper y_stepper2 = AccelStepper(motorInterfaceType, Y2_STEP, 2);
@@ -182,6 +184,9 @@ void setup() {
 
   temperature = 24;
 
+  target_time = 65;
+  target_time *= 1000;
+
   extra_time = 25;
   extra_time *= 1000;
 
@@ -203,23 +208,60 @@ void setup() {
 }
 
 void run() {
+  int tct = 0, cct = 0, rct = 0, lct = 0, ct = (int)path.size();
+  for(std::string &s : path) {
+    if(s[0] == 't') {
+      tct++;
+    }
+    else if(s[0] == 'c') {
+      cct++;
+    }
+    else if(s[0] == 'r') {
+      rct++;
+    }
+    else if(s[0] == 'l') {
+      lct++;
+    }
+  }
+  predicted_time = 1238 + 1375 * (tct - 1) + 1061 * rct + 1062 * lct + cct * 300;
+  extra_time = target_time - predicted_time;
+  int prev = millis();
   for(std::string &s : path) {
     if(s[0] == 't') {
       drivetrain.driveDistance(std::stod(s.substr(1)), false);
+      if(tct == 0) {
+        // predicted_time -= 1238;
+      }
+      else {
+        // predicted_time -= 1375;
+      }
+      // tct++;
     }
     else if(s[0] == 'c') {
       drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false); // remember to add offset from half of the wood block; measure it
+      // predicted_time -= 300;
     }
     else if(s[0] == 'r') {
       drivetrain.turnRight();
+      // predicted_time -= 1601;
     }
     else if(s[0] == 'l') {
       drivetrain.turnLeft();
+      // predicted_time -= 1602;
     }
     else if(s[0] == 'a') {
       drivetrain.turnAround();
     }
-    delay(extra_time/((int)path.size()));
+    // int to_go = target_time - (millis() - prev) - predicted_time;
+    // if(to_go < 0) {
+    //   to_go = 0;
+    // }
+    // delay(to_go / ct);
+    // ct--;
+    // PRINTER.println(to_go);
+    // PRINTER.println(millis() - prev);
+    delay(extra_time/(int)path.size());
+    ct--;
   }
   // drivetrain.driveDistance(7, false);
   drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
@@ -227,16 +269,23 @@ void run() {
   drivetrain.turnRight();
   drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 25 + 0.75, false);
 
+  // long startTime = millis();
   // drivetrain.driveDistance(37, false);
+  // PRINTER.print("First: ");
+  // PRINTER.print(millis() - startTime);
+  // PRINTER.print("\n");
+  // startTime = millis();
   // drivetrain.driveDistance(50.5, false);
-  // drivetrain.turnRight();
+  // drivetrain.turnLeft();
   // drivetrain.driveDistance(50.5, false);
-  // drivetrain.turnRight();
+  // drivetrain.turnLeft();
   // drivetrain.driveDistance(50.5, false);
-  // drivetrain.turnRight();
+  // drivetrain.turnLeft();
   // drivetrain.driveDistance(50.5, false);
-  // drivetrain.turnRight();
-
+  // drivetrain.turnLeft();
+  // PRINTER.print("rx4: ");
+  // PRINTER.print(millis() - startTime);
+  // PRINTER.print("\n");
   // drivetrain.turnRight();
   // delay(500);
   // PRINTER.println(drivetrain.getYaw());
