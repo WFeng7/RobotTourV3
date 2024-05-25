@@ -54,10 +54,6 @@ void Drivetrain::moveUntilSensor(double target, double temp) {
     }
 }
 
-void Drivetrain::applyRollingAverage(double yaw) {
-    
-}
-
 void Drivetrain::updateYaw() {
     imu::Quaternion quat = bno.getQuat();
 

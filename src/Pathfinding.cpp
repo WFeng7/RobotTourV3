@@ -36,6 +36,22 @@ void Pathfinding::addGate(std::string s) {
   bonus[(s[0] - '0') * N + (s[2] - '0')] = n_bonus;
 }
 
+bool Pathfinding::checkBlock(int a, int b, int dir) {
+  if(dir == 0 && a < N && wood[a * N + b][a * N + b + 1]) {
+    return true;
+  }
+  else if(dir == 2 && b > 0 && wood[a * N + b - 1][a * N + b]) {
+    return true;
+  }
+  else if(dir == 1 && a < N && wood[(a + 1) * N + b][a * N + b]) {
+    return true;
+  }
+  else if(dir == 3 && a > 0 && wood[(a - 1) * N + b][a * N + b]) {
+    return true;
+  }
+  return false;
+}
+
 void Pathfinding::findPath() {
   std::pair<short, short> vis[N * N][1 << n_bonus];
   bool flag = false;
@@ -115,19 +131,7 @@ void Pathfinding::findPath() {
       }
       dist = 50;
       // get distance
-      bool extra_dist = false;
-      if(dir == 0 && a < N && wood[a * N + b][a * N + b + 1]) {
-        extra_dist = true;
-      }
-      else if(dir == 2 && b > 0 && wood[a * N + b - 1][a * N + b]) {
-        extra_dist = true;
-      }
-      else if(dir == 1 && a < N && wood[(a + 1) * N + b][a * N + b]) {
-         extra_dist = true;
-      }
-      else if(dir == 3 && a > 0 && wood[(a - 1) * N + b][a * N + b]) {
-         extra_dist = true;
-      }
+      bool extra_dist = checkBlock(a, b, dir);
       if(extra_dist) {
         path.push_back("c");
       }
@@ -138,8 +142,20 @@ void Pathfinding::findPath() {
         path.push_back("l");
       }
       else {
-        path.push_back("r");
-        path.push_back("r");
+        if(checkBlock(a, b, (dir + 3) % 4)) {
+          path.push_back("l");
+          path.push_back("c");
+          path.push_back("l");
+        }
+        else if(checkBlock(a, b, (dir + 1) % 4)) {
+          path.push_back("r");
+          path.push_back("c");
+          path.push_back("r");
+        }
+        else {
+          path.push_back("r");
+          path.push_back("r");
+        }
         // path.push_back("a");
         // dist = -dist;
       }

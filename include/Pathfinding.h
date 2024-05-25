@@ -25,9 +25,9 @@ class Pathfinding {
         void addBlocks(std::vector<std::string> vblocks, std::vector<std::string> hblocks);
         void addGate(short a, short b);
         void addGate(std::string s);
+        bool checkBlock(int a, int b, int dir);
         void findPath();
         std::vector<std::string> getPath();
-
         void setStart(short s);
         void setTarget(std::pair<short, short> t);
 };
