@@ -11,14 +11,14 @@ struct T {
 
 class Pathfinding {
     private:
-        static const short N = 4;
+        static const short N = 5, M = 4;
         const short dx[4] = {0, 1, 0, -1}, dy[4] = {1, 0, -1, 0};
-        short n_bonus;
+        short n_bonus = 0;
         std::vector<std::string> path;
-        short bonus[N * N] = { 0 };
-        short start;
+        short bonus[N * M] = { 0 };
+        std::pair<short, char> start;
         std::pair<short, short> target;
-        bool wood[N*N][N*N] = { false };
+        bool wood[N*M][N*M] = { false };
     public:
         Pathfinding();
         void addWood(short a, short b, short c, short d);
@@ -28,7 +28,7 @@ class Pathfinding {
         bool checkBlock(int a, int b, int dir);
         void findPath();
         std::vector<std::string> getPath();
-        void setStart(short s);
+        void setStart(std::pair<short, char> s);
         void setTarget(std::pair<short, short> t);
 };
 

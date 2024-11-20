@@ -164,37 +164,41 @@ void setup() {
   #endif
 
   // CHANGE THIS:
-  pathfinding.setStart(0);
-  pathfinding.setTarget({1, 0});
+  pathfinding.setStart({1, 'h'});
+  pathfinding.setTarget({2, 1});
 
   std::vector<std::string> vblocks, hblocks;
-  pathfinding.addGate("0 1");
-  pathfinding.addGate("1 2");
-  pathfinding.addGate("3 2");
+  pathfinding.addGate("0 0");
+  pathfinding.addGate("0 2");
+  pathfinding.addGate("0 3");
+  pathfinding.addGate("3 0");
   pathfinding.addGate("3 1");
-  // pathfinding.addGate("3 3");
-  vblocks.push_back("000");
-  vblocks.push_back("010");
-  vblocks.push_back("101");
-  vblocks.push_back("000");
+  pathfinding.addGate("3 3");
 
-  hblocks.push_back("0101");
-  hblocks.push_back("0101");
-  hblocks.push_back("0100");
+  vblocks.push_back("0010");
+  vblocks.push_back("1000");
+  vblocks.push_back("0100");
+  vblocks.push_back("1010");
 
-  temperature = 24;
-
-  target_time = 65;
-  target_time *= 1000;
-
-  extra_time = 25;
-  extra_time *= 1000;
+  hblocks.push_back("11000");
+  hblocks.push_back("00010");
+  hblocks.push_back("00000");
 
   pathfinding.addBlocks(vblocks, hblocks);
 
   pathfinding.findPath();
 
   path = pathfinding.getPath();
+
+  temperature = 27;
+
+  target_time = 74;
+  target_time *= 1000;
+
+  extra_time = 0;
+  extra_time *= 1000;
+
+  // END CHANGE
 
   // temperature = bno.getTemp();
   PRINTER.println(temperatureRead());
@@ -224,7 +228,7 @@ void run() {
     }
   }
   predicted_time = 1238 + 1375 * (tct - 1) + 1061 * rct + 1062 * lct + cct * 300;
-  extra_time = target_time - predicted_time;
+  extra_time = target_time - predicted_time; // change to 0 if less
   int prev = millis();
   for(std::string &s : path) {
     if(s[0] == 't') {
@@ -252,14 +256,6 @@ void run() {
     else if(s[0] == 'a') {
       drivetrain.turnAround();
     }
-    // int to_go = target_time - (millis() - prev) - predicted_time;
-    // if(to_go < 0) {
-    //   to_go = 0;
-    // }
-    // delay(to_go / ct);
-    // ct--;
-    // PRINTER.println(to_go);
-    // PRINTER.println(millis() - prev);
     delay(extra_time/(int)path.size());
     ct--;
   }
@@ -268,40 +264,20 @@ void run() {
   // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false);
   drivetrain.turnRight();
   drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 25 + 0.75, false);
-
-  // long startTime = millis();
-  // drivetrain.driveDistance(37, false);
-  // PRINTER.print("First: ");
-  // PRINTER.print(millis() - startTime);
-  // PRINTER.print("\n");
-  // startTime = millis();
-  // drivetrain.driveDistance(50.5, false);
-  // drivetrain.turnLeft();
-  // drivetrain.driveDistance(50.5, false);
-  // drivetrain.turnLeft();
-  // drivetrain.driveDistance(50.5, false);
-  // drivetrain.turnLeft();
-  // drivetrain.driveDistance(50.5, false);
-  // drivetrain.turnLeft();
-  // PRINTER.print("rx4: ");
-  // PRINTER.print(millis() - startTime);
-  // PRINTER.print("\n");
-  // drivetrain.turnRight();
-  // delay(500);
-  // PRINTER.println(drivetrain.getYaw());
 }
 
 void loop() {
   digitalWrite(2, HIGH);
   int reading = digitalRead(BUTTON_PIN);
   delay(10);
-
-  if(reading == LOW) {
+  PRINTER.println(reading);
+  if(reading == HIGH) {
+    PRINTER.println("Loop!");
     button_pressed = true;
     led.setBlue();
   }
   else {
-    if (reading == HIGH && button_pressed) {
+    if (reading == LOW && button_pressed) {
       button_pressed = false;
 
       drivetrain.resetOrientation();
