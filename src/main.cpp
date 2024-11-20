@@ -53,7 +53,7 @@ Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire);
 
 Pathfinding pathfinding = Pathfinding();
 
-std::vector<std::string> path;
+std::vector<std::string> path, temp;
 
 Drivetrain drivetrain = Drivetrain(&y_stepper1, &y_stepper2, &bno);
 
@@ -164,31 +164,38 @@ void setup() {
   #endif
 
   // CHANGE THIS:
-  pathfinding.setStart({1, 'h'});
-  pathfinding.setTarget({2, 1});
+  pathfinding.setStart({2, 'h'});
+  pathfinding.setTarget({1, 3});
+  pathfinding.setLastGate({4, 1}); // remove if we don't want last gate.
 
   std::vector<std::string> vblocks, hblocks;
   pathfinding.addGate("0 0");
-  pathfinding.addGate("0 2");
-  pathfinding.addGate("0 3");
-  pathfinding.addGate("3 0");
-  pathfinding.addGate("3 1");
-  pathfinding.addGate("3 3");
+  pathfinding.addGate("2 3");
+  pathfinding.addGate("4 1");
+  pathfinding.addGate("4 3");
 
-  vblocks.push_back("0010");
-  vblocks.push_back("1000");
+  vblocks.push_back("1001");
+  vblocks.push_back("0000");
+  vblocks.push_back("1001");
   vblocks.push_back("0100");
-  vblocks.push_back("1010");
 
-  hblocks.push_back("11000");
-  hblocks.push_back("00010");
-  hblocks.push_back("00000");
+  hblocks.push_back("10100");
+  hblocks.push_back("00001");
+  hblocks.push_back("00100");
 
   pathfinding.addBlocks(vblocks, hblocks);
 
   pathfinding.findPath();
 
   path = pathfinding.getPath();
+
+  pathfinding.gridPath();
+
+  temp = pathfinding.getPath();
+
+  for(std::string &s : temp) {
+    path.push_back(s);
+  } 
 
   temperature = 27;
 

@@ -83,7 +83,7 @@ void Pathfinding::findPath() {
         }
         if(nt.x >= 0 && nt.x < N && nt.y >= 0 && nt.y < M && !wood[nt.p][nt.x * M + nt.y] && vis[nt.x * M + nt.y][nt.z].second == -1) {
           vis[nt.x * M + nt.y][nt.z] = {nt.p, nt.pz};
-          if(nt.x == target.first && nt.y == target.second && nt.z == (1 << n_bonus) - 1) {
+          if(nt.x == last_gate.first && nt.y == last_gate.second && nt.z == (1 << n_bonus) - 1) {
             flag = true;
             break;
           }
@@ -174,6 +174,116 @@ void Pathfinding::findPath() {
     path.push_back("t" + std::to_string(50.5));
     dist -= 50;
   }
+  last_dir = dir;
+}
+
+void Pathfinding::gridPath() {
+  path.clear();
+  if(last_gate == target) {
+    return;
+  }
+  short vis[N * M];
+  bool flag = false;
+  for(short i = 0; i < N*M; i++) {
+    vis[i] = -10;
+  }
+  std::queue<T> q;
+  T t; t.x = last_gate.first; t.y = last_gate.second; t.z = 0; t.p = -1, t.pz = 0;
+  T nt;
+  vis[t.x * M + t.y] = -1;
+  q.push(t);
+  while(q.size()) {
+      t = q.front();
+      q.pop();
+      nt.p = t.x * M + t.y;
+      for(short i = 0; i < 4; i++) {
+        nt.x = dx[i] + t.x;
+        nt.y = dy[i] + t.y;
+        if(nt.x >= 0 && nt.x < N && nt.y >= 0 && nt.y < M && !wood[nt.p][nt.x * M + nt.y] && vis[nt.x * M + nt.y] == -10) {
+          vis[nt.x * M + nt.y] = nt.p;
+          if(nt.x == target.first && nt.y == target.second) {
+            flag = true;
+            break;
+          }
+          q.push(nt);
+        }
+    }
+    if(flag) {
+      break;
+    }
+  }
+  std::vector<short> coords;
+  short tt = nt.x * M + nt.y;
+  while(tt != -1) {
+    coords.push_back(tt);
+    tt = vis[tt];
+  } 
+  short a, b, c, d;
+  short dist = 0;
+  short dir = last_dir, ndir = last_dir; // 0 up 1 right 2 down 3 left
+  for(short i = coords.size() - 2; i >= 0; i--) {
+    a = coords[i + 1] / M;
+    b = coords[i + 1] % M;
+    c = coords[i] / M;
+    d = coords[i] % M;
+    if(d - b > 0) {
+      ndir = 0;
+    }
+    else if(c - a > 0) {
+      ndir = 1;
+    }
+    else if(d - b < 0) {
+      ndir = 2;
+    }
+    else {
+      ndir = 3;
+    } 
+    if(dir != ndir) {
+      while(dist >= 50) {
+        path.push_back("t" + std::to_string(50.5));
+        dist -= 50;
+      }
+      dist = 50;
+      // get distance
+      bool extra_dist = checkBlock(a, b, dir);
+      if(extra_dist) {
+        path.push_back("c");
+      }
+      if(ndir - dir == 1 || ndir - dir == -3) {
+        path.push_back("r");
+      }
+      else if(ndir - dir == -1 || ndir - dir == 3) {
+        path.push_back("l");
+      }
+      else {
+        if(checkBlock(a, b, (dir + 3) % 4)) {
+          path.push_back("l");
+          path.push_back("c");
+          path.push_back("l");
+        }
+        else if(checkBlock(a, b, (dir + 1) % 4)) {
+          path.push_back("r");
+          path.push_back("c");
+          path.push_back("r");
+        }
+        else {
+          path.push_back("r");
+          path.push_back("r");
+        }
+        // path.push_back("a");
+        // dist = -dist;
+      }
+      dir = ndir;
+    }
+    else {
+      dist += 50;
+    }
+  }
+  while(dist >= 50) {
+    path.push_back("t" + std::to_string(50.5));
+    dist -= 50;
+  }
+  last_dir = dir;
 }
 
 std::vector<std::string> Pathfinding::getPath() {
@@ -186,4 +296,9 @@ void Pathfinding::setStart(std::pair<short, char> s) {
 
 void Pathfinding::setTarget(std::pair<short, short> t) {
   target = t;
+  last_gate = t;
+}
+
+void Pathfinding::setLastGate(std::pair<short, short> l) {
+  last_gate = l;
 }
