@@ -126,9 +126,9 @@ void Pathfinding::findPath() {
         path.push_back("t" + std::to_string(37));
         dist -= 37;
       }
-      while(dist >= 50) {
-        path.push_back("t" + std::to_string(50.5));
-        dist -= 50;
+      if(dist >= 50) {
+        path.push_back("t" + std::to_string(50.5 * (dist / 50)));
+        dist -= (dist / 50) * 50; 
       }
       dist = 50;
       // get distance
@@ -170,9 +170,9 @@ void Pathfinding::findPath() {
     path.push_back("t" + std::to_string(37));
     dist -= 37;
   }
-  while(dist >= 50) {
-    path.push_back("t" + std::to_string(50.5));
-    dist -= 50;
+  if(dist >= 50) {
+    path.push_back("t" + std::to_string(50.5 * (dist / 50)));
+    dist -= (dist / 50) * 50; 
   }
   last_dir = dir;
 }
@@ -239,9 +239,9 @@ void Pathfinding::gridPath() {
       ndir = 3;
     } 
     if(dir != ndir) {
-      while(dist >= 50) {
-        path.push_back("t" + std::to_string(50.5));
-        dist -= 50;
+      if(dist >= 50) {
+        path.push_back("t" + std::to_string(50.5 * (dist / 50)));
+        dist -= (dist / 50) * 50; 
       }
       dist = 50;
       // get distance
@@ -279,9 +279,9 @@ void Pathfinding::gridPath() {
       dist += 50;
     }
   }
-  while(dist >= 50) {
-    path.push_back("t" + std::to_string(50.5));
-    dist -= 50;
+  if(dist >= 50) {
+    path.push_back("t" + std::to_string(50.5 * (dist / 50)));
+    dist -= (dist / 50) * 50; 
   }
   last_dir = dir;
 }
