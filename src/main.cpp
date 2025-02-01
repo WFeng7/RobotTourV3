@@ -164,24 +164,26 @@ void setup() {
   #endif
 
   // CHANGE THIS:
-  pathfinding.setStart({2, 'h'});
-  pathfinding.setTarget({1, 3});
-  pathfinding.setLastGate({4, 1}); // remove if we don't want last gate.
+  pathfinding.setStart({1, 'v'});
+  pathfinding.setTarget({4, 1});
+  pathfinding.setLastGate({2, 1}); // remove if we don't want last gate.
 
   std::vector<std::string> vblocks, hblocks;
   pathfinding.addGate("0 0");
+  pathfinding.addGate("4 0");
+  // pathfinding.addGate("2 1");
+  // pathfinding.addGate("0 3");
   pathfinding.addGate("2 3");
-  pathfinding.addGate("4 1");
   pathfinding.addGate("4 3");
 
   vblocks.push_back("1001");
+  vblocks.push_back("0010");
+  vblocks.push_back("0010");
   vblocks.push_back("0000");
-  vblocks.push_back("1001");
-  vblocks.push_back("0100");
 
-  hblocks.push_back("10100");
-  hblocks.push_back("00001");
-  hblocks.push_back("00100");
+  hblocks.push_back("00000");
+  hblocks.push_back("11101");
+  hblocks.push_back("00101");
 
   pathfinding.addBlocks(vblocks, hblocks);
 
@@ -195,11 +197,11 @@ void setup() {
 
   for(std::string &s : temp) {
     path.push_back(s);
-  } 
+  }
 
   temperature = 27;
 
-  target_time = 74;
+  target_time = 55;
   target_time *= 1000;
 
   extra_time = 0;
@@ -235,7 +237,7 @@ void run() {
     }
   }
   predicted_time = 1238 + 1375 * (tct - 1) + 1061 * rct + 1062 * lct + cct * 300;
-  extra_time = target_time - predicted_time; // change to 0 if less
+  extra_time = max(target_time - predicted_time, 0); // change to 0 if less
   int prev = millis();
   for(std::string &s : path) {
     if(s[0] == 't') {
@@ -266,11 +268,17 @@ void run() {
     delay(extra_time/(int)path.size());
     ct--;
   }
-  // drivetrain.driveDistance(7, false);
-  drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
-  // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false);
   drivetrain.turnRight();
-  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 25 + 0.75, false);
+  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 18, false);
+  drivetrain.turnRight();
+  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 76, false);
+  // drivetrain.driveDistance(7, false);
+  // drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
+  // drivetrain.turnLeft();
+  // drivetrain.driveDistance(15.00, false)
+  // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false);
+  // drivetrain.turnRight();
+  // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 25 + 0.75, false);
 }
 
 void loop() {
