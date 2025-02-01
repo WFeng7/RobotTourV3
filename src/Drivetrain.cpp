@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include "Drivetrain.h"
 
-Drivetrain::Drivetrain(AccelStepper* y_stepper1, AccelStepper* y_stepper2, Adafruit_BNO055* bno):
+Drivetrain::Drivetrain(AccelStepper* y_stepper1, AccelStepper* y_stepper2, QwiicOTOS* myOtos):
     y_stepper1(*y_stepper1),
     y_stepper2(*y_stepper2),
-    bno(*bno) {
+    myOtos(*myOtos) {
         pid.EnableContinuousInput(-180, 180);
         pid.SetTolerance(0.05, 0.05);
     }
@@ -55,16 +55,18 @@ void Drivetrain::moveUntilSensor(double target, double temp) {
 }
 
 void Drivetrain::updateYaw() {
-    imu::Quaternion quat = bno.getQuat();
+    sfe_otos_pose2d_t myPosition;
+    myOtos.getPosition(myPosition);
+    // imu::Quaternion quat = bno.getQuat();
 
-    quat.normalize();
-    imu::Vector<(u_int8_t)3U> euler = quat.toEuler();
-    double yy = quat.y() * quat.y();
-    double yaw = atan2(2 * (quat.w() * quat.z() + quat.x() * quat.y()), 1 - 2*(yy+quat.z() * quat.z()));
+    // quat.normalize();
+    // imu::Vector<(u_int8_t)3U> euler = quat.toEuler();
+    // double yy = quat.y() * quat.y();
+    double yaw = myPosition.h;
 
     // double yaw = euler.x();
 
-    yaw = yaw * 180 / PI;
+    // yaw = yaw * 180 / PI;
 
     sharedYaw = yaw;
     // sharedYaw = yaw;

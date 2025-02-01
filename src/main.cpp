@@ -12,6 +12,7 @@
 #include "Drivetrain.h"
 #include <math.h>
 #include <Adafruit_BNO055.h>
+#include <SparkFun_Qwiic_OTOS_Arduino_Library.h>
 #include <Pathfinding.h>
 #include <HCSR04.h>
 
@@ -27,7 +28,7 @@ int t = 0;
 
 const signed char orientationDefault[9] = {0, 1, 0, 0, 0, 1, 1, 0, 0};
 
-adafruit_bno055_offsets_t bno_offsets;
+// adafruit_bno055_offsets_t bno_offsets;
 
 int lastButtonState = HIGH;
 int buttonState;
@@ -49,13 +50,15 @@ int target_time = 0;
 AccelStepper y_stepper1 = AccelStepper(motorInterfaceType, Y1_STEP, 2);
 AccelStepper y_stepper2 = AccelStepper(motorInterfaceType, Y2_STEP, 2);
 
-Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire);
+// Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire);
+
+QwiicOTOS myOtos;
 
 Pathfinding pathfinding = Pathfinding();
 
 std::vector<std::string> path, temp;
 
-Drivetrain drivetrain = Drivetrain(&y_stepper1, &y_stepper2, &bno);
+Drivetrain drivetrain = Drivetrain(&y_stepper1, &y_stepper2, &myOtos);
 
 LED led;
 
@@ -125,14 +128,23 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   PRINTER.println("IMU Setup");
-  if (!drivetrain.bno.begin(OPERATION_MODE_NDOF)) {
-    PRINTER.println("Failed to initialize IMU!");
-    while (1);
+  // if (!drivetrain.bno.begin(OPERATION_MODE_NDOF)) {
+  //   PRINTER.println("Failed to initialize IMU!");
+  //   while (1);
+  // }
+  while(myOtos.begin() == false) {
+    Serial.println("OTOS not connected, check your wiring and I2C address!");
+    delay(1000);
   }
 
-  drivetrain.bno.enterNormalMode();
-  drivetrain.bno.setExtCrystalUse(true);
-  drivetrain.bno.enableAutoRange(true);
+  Serial.println("OTOS connected!");
+
+  myOtos.calibrateImu();
+  myOtos.resetTracking();
+
+  // drivetrain.bno.enterNormalMode();
+  // drivetrain.bno.setExtCrystalUse(true);
+  // drivetrain.bno.enableAutoRange(true);
 
     //calibrate IMU
   PRINTER.println("Calibrating IMU");
@@ -140,7 +152,7 @@ void setup() {
 
   //blink LED while calibrating
 
-  adafruit_bno055_offsets_t calibrationData;
+  // adafruit_bno055_offsets_t calibrationData;
   #ifdef SAVE_CALIBRATION
     led.rainbow(false);
     while (!(system == 3 && gyro == 3 && mag == 3)) {
@@ -156,11 +168,11 @@ void setup() {
       EEPROM.write(i, *((uint8_t*)&calibrationData + i));
     }
   #else
-    for (unsigned int i = 0; i < sizeof(calibrationData); i++) {
-        *((uint8_t*)&calibrationData + i) = EEPROM.read(i);
-    }
+    // for (unsigned int i = 0; i < sizeof(calibrationData); i++) {
+    //     *((uint8_t*)&calibrationData + i) = EEPROM.read(i);
+    // }
 
-    bno.setSensorOffsets(calibrationData);
+    // bno.setSensorOffsets(calibrationData);
   #endif
 
   // CHANGE THIS:
@@ -303,14 +315,22 @@ void loop() {
       double post = drivetrain.getYaw();
       PRINTER.print("OK");
 
-      while (!drivetrain.bno.begin(OPERATION_MODE_NDOF)) {
-        PRINTER.println("Failed to initialize IMU!");
+      // while (!drivetrain.bno.begin(OPERATION_MODE_NDOF)) {
+      //   PRINTER.println("Failed to initialize IMU!");
+      // }
+      while(myOtos.begin() == false) {
+        Serial.println("OTOS not connected, check your wiring and I2C address!");
+        delay(1000);
       }
 
+      Serial.println("OTOS connected!");
+
+      myOtos.calibrateImu();
+      myOtos.resetTracking();
       // led.rainbow(true);
-      drivetrain.bno.enterNormalMode();
-      drivetrain.bno.setExtCrystalUse(true);
-      drivetrain.bno.enableAutoRange(true);
+      // drivetrain.bno.enterNormalMode();
+      // drivetrain.bno.setExtCrystalUse(true);
+      // drivetrain.bno.enableAutoRange(true);
       // led.rainbow(false);
 
       led.setYellow();

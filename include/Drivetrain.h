@@ -6,6 +6,7 @@
 #include <math.h>
 #include <PIDController.h>
 #include <Adafruit_BNO055.h>
+#include <SparkFun_Qwiic_OTOS_Arduino_Library.h>
 #include <Definitions.h>
 #include <HCSR04.h>
 
@@ -24,8 +25,8 @@ class Drivetrain {
         double sharedYaw = 0.0;
         double yawOffset = 0;
         float frequency = 100.0;
-        Adafruit_BNO055 bno;
-        Drivetrain(AccelStepper* y_stepper1, AccelStepper* y_stepper2, Adafruit_BNO055* bno);
+        QwiicOTOS myOtos;
+        Drivetrain(AccelStepper* y_stepper1, AccelStepper* y_stepper2, QwiicOTOS* myOtos);
         void stepperSleep();
         void driveDistance(double dist, bool horizontal);
         void turn(int angle, double ROBOTDIAMETER);
