@@ -164,26 +164,24 @@ void setup() {
   #endif
 
   // CHANGE THIS:
-  pathfinding.setStart({1, 'v'});
-  pathfinding.setTarget({4, 1});
-  pathfinding.setLastGate({2, 1}); // remove if we don't want last gate.
+  pathfinding.setStart({1, 'h'});
+  pathfinding.setTarget({0, 1});
+  pathfinding.setLastGate({4, 1}); // remove if we don't want last gate.
 
   std::vector<std::string> vblocks, hblocks;
-  pathfinding.addGate("0 0");
-  pathfinding.addGate("4 0");
-  // pathfinding.addGate("2 1");
-  // pathfinding.addGate("0 3");
-  pathfinding.addGate("2 3");
+  pathfinding.addGate("1 1");
+  pathfinding.addGate("2 2");
+  pathfinding.addGate("0 3");
   pathfinding.addGate("4 3");
 
-  vblocks.push_back("1001");
-  vblocks.push_back("0010");
-  vblocks.push_back("0010");
+  vblocks.push_back("0001");
+  vblocks.push_back("0100");
+  vblocks.push_back("0101");
   vblocks.push_back("0000");
 
-  hblocks.push_back("00000");
-  hblocks.push_back("11101");
-  hblocks.push_back("00101");
+  hblocks.push_back("00100");
+  hblocks.push_back("00001");
+  hblocks.push_back("11000");
 
   pathfinding.addBlocks(vblocks, hblocks);
 
@@ -199,9 +197,82 @@ void setup() {
     path.push_back(s);
   }
 
+  // path = {"t37",
+  //   "c",
+  //   "r",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000",
+  //   "t50.500000"","
+  //   "c",
+  //   "r",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000",
+  //   "t50.500000"","
+  //   "c",
+  //   "l",
+  //   "c"","
+  //   "l",
+  //   "t50.500000",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000",
+  //   "r",
+  //   "r",
+  //   "t50.500000",
+  //   "t50.500000",
+  //   "t50.500000"","
+  //   "c",
+  //   "r",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000",
+  //   "l",
+  //   "c"","
+  //   "l",
+  //   "t50.500000"","
+  //   "c",
+  //   "r",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000"","
+  //   "c",
+  //   "l",
+  //   "c"","
+  //   "l",
+  //   "t50.500000",
+  //   "r",
+  //   "t50.500000",
+  //   "r",
+  //   "t50.500000",
+  //   "t50.500000",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000",
+  //   "t50.500000",
+  //   "l",
+  //   "t50.500000",
+  //   "t50.500000",
+  //   "c",
+  //   "r",
+  //   "t50.500000"};
+
   temperature = 27;
 
-  target_time = 55;
+  target_time = 75;
   target_time *= 1000;
 
   extra_time = 0;
@@ -268,9 +339,9 @@ void run() {
     delay(extra_time/(int)path.size());
     ct--;
   }
-  drivetrain.turnRight();
+  drivetrain.turnLeft();
   drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 18, false);
-  drivetrain.turnRight();
+  drivetrain.turnLeft();
   drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 76, false);
   // drivetrain.driveDistance(7, false);
   // drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
