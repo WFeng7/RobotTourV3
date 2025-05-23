@@ -6,6 +6,7 @@
 #include <math.h>
 #include <PIDController.h>
 #include <Adafruit_BNO055.h>
+#include <Stream.h>
 #include <SparkFun_Qwiic_OTOS_Arduino_Library.h>
 #include <Definitions.h>
 #include <HCSR04.h>

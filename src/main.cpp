@@ -12,6 +12,7 @@
 #include "Drivetrain.h"
 #include <math.h>
 #include <Adafruit_BNO055.h>
+#include <SparkFun_Toolkit.h>
 #include <SparkFun_Qwiic_OTOS_Arduino_Library.h>
 #include <Pathfinding.h>
 #include <HCSR04.h>
@@ -177,25 +178,24 @@ void setup() {
 
   // CHANGE THIS:
   pathfinding.setStart({1, 'v'});
-  pathfinding.setTarget({4, 1});
+  pathfinding.setTarget({0, 0});
   pathfinding.setLastGate({2, 1}); // remove if we don't want last gate.
 
   std::vector<std::string> vblocks, hblocks;
-  pathfinding.addGate("0 0");
-  pathfinding.addGate("4 0");
-  // pathfinding.addGate("2 1");
-  // pathfinding.addGate("0 3");
+  pathfinding.addGate("0 2");
   pathfinding.addGate("2 3");
-  pathfinding.addGate("4 3");
+  pathfinding.addGate("3 0");
+  pathfinding.addGate("3 3");
+  pathfinding.addGate("4 0");
 
-  vblocks.push_back("1001");
+  vblocks.push_back("0110");
+  vblocks.push_back("1000");
   vblocks.push_back("0010");
-  vblocks.push_back("0010");
-  vblocks.push_back("0000");
+  vblocks.push_back("1011");
 
+  hblocks.push_back("00010");
+  hblocks.push_back("00100");
   hblocks.push_back("00000");
-  hblocks.push_back("11101");
-  hblocks.push_back("00101");
 
   pathfinding.addBlocks(vblocks, hblocks);
 
@@ -213,7 +213,7 @@ void setup() {
 
   temperature = 27;
 
-  target_time = 55;
+  target_time = 79;
   target_time *= 1000;
 
   extra_time = 0;
