@@ -280,8 +280,9 @@ void run() {
     delay(extra_time/(int)path.size());
     ct--;
   }
+  drivetrain.driveDistance(10, false);
   drivetrain.turnLeft();
-  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 18, false);
+  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 24, false);
   // drivetrain.driveDistance(7, false);
   // drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
   // drivetrain.turnLeft();
