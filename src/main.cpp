@@ -164,24 +164,25 @@ void setup() {
   #endif
 
   // CHANGE THIS:
-  pathfinding.setStart({1, 'h'});
-  pathfinding.setTarget({0, 1});
-  pathfinding.setLastGate({4, 1}); // remove if we don't want last gate.
+  pathfinding.setStart({1, 'v'});
+  pathfinding.setTarget({0, 0});
+  pathfinding.setLastGate({2, 1}); // remove if we don't want last gate.
 
   std::vector<std::string> vblocks, hblocks;
-  pathfinding.addGate("1 1");
-  pathfinding.addGate("2 2");
-  pathfinding.addGate("0 3");
-  pathfinding.addGate("4 3");
+  pathfinding.addGate("0 2");
+  pathfinding.addGate("2 3");
+  pathfinding.addGate("3 0");
+  pathfinding.addGate("3 3");
+  pathfinding.addGate("4 0");
 
-  vblocks.push_back("0001");
-  vblocks.push_back("0100");
-  vblocks.push_back("0101");
-  vblocks.push_back("0000");
+  vblocks.push_back("0110");
+  vblocks.push_back("1000");
+  vblocks.push_back("0010");
+  vblocks.push_back("1011");
 
+  hblocks.push_back("00010");
   hblocks.push_back("00100");
-  hblocks.push_back("00001");
-  hblocks.push_back("11000");
+  hblocks.push_back("00000");
 
   pathfinding.addBlocks(vblocks, hblocks);
 
@@ -196,79 +197,6 @@ void setup() {
   for(std::string &s : temp) {
     path.push_back(s);
   }
-
-  // path = {"t37",
-  //   "c",
-  //   "r",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000",
-  //   "t50.500000"","
-  //   "c",
-  //   "r",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000",
-  //   "t50.500000"","
-  //   "c",
-  //   "l",
-  //   "c"","
-  //   "l",
-  //   "t50.500000",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000",
-  //   "r",
-  //   "r",
-  //   "t50.500000",
-  //   "t50.500000",
-  //   "t50.500000"","
-  //   "c",
-  //   "r",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000",
-  //   "l",
-  //   "c"","
-  //   "l",
-  //   "t50.500000"","
-  //   "c",
-  //   "r",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000"","
-  //   "c",
-  //   "l",
-  //   "c"","
-  //   "l",
-  //   "t50.500000",
-  //   "r",
-  //   "t50.500000",
-  //   "r",
-  //   "t50.500000",
-  //   "t50.500000",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000",
-  //   "t50.500000",
-  //   "l",
-  //   "t50.500000",
-  //   "t50.500000",
-  //   "c",
-  //   "r",
-  //   "t50.500000"};
 
   temperature = 27;
 
@@ -341,8 +269,8 @@ void run() {
   }
   drivetrain.turnLeft();
   drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 18, false);
-  drivetrain.turnLeft();
-  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 76, false);
+  // drivetrain.turnLeft();
+  // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 76, false);
   // drivetrain.driveDistance(7, false);
   // drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
   // drivetrain.turnLeft();
