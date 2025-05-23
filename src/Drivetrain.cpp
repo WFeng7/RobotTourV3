@@ -4,7 +4,7 @@
 Drivetrain::Drivetrain(AccelStepper* y_stepper1, AccelStepper* y_stepper2, QwiicOTOS* myOtos):
     y_stepper1(*y_stepper1),
     y_stepper2(*y_stepper2),
-    myOtos(*myOtos) {
+    myOtos(myOtos) {
         pid.EnableContinuousInput(-180, 180);
         pid.SetTolerance(0.05, 0.05);
     }
@@ -56,7 +56,7 @@ void Drivetrain::moveUntilSensor(double target, double temp) {
 
 void Drivetrain::updateYaw() {
     sfe_otos_pose2d_t myPosition;
-    myOtos.getPosition(myPosition);
+    myOtos->getPosition(myPosition);
     // imu::Quaternion quat = bno.getQuat();
 
     // quat.normalize();

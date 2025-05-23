@@ -14,6 +14,7 @@
 class Drivetrain {
     private: 
         AccelStepper y_stepper1, y_stepper2;
+        QwiicOTOS* myOtos;
         int orientation = 0;
         int stepsPerRev = 200;
         int microstepMultiplier = 16;
@@ -26,7 +27,6 @@ class Drivetrain {
         double sharedYaw = 0.0;
         double yawOffset = 0;
         float frequency = 100.0;
-        QwiicOTOS myOtos;
         Drivetrain(AccelStepper* y_stepper1, AccelStepper* y_stepper2, QwiicOTOS* myOtos);
         void stepperSleep();
         void driveDistance(double dist, bool horizontal);

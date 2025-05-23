@@ -306,8 +306,9 @@ void loop() {
   else {
     if (reading == LOW && button_pressed) {
       button_pressed = false;
-
+      PRINTER.println("Button Pressed!");
       drivetrain.resetOrientation();
+      PRINTER.println("Orientation Reset!");
       PRINTER.printf("Pre-zero: %f\n", drivetrain.getYaw());
       double pre = drivetrain.getYaw();
       drivetrain.zeroYaw();
