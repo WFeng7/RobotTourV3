@@ -52,7 +52,7 @@
     #define PRINTER Serial
 #endif
 
-#define TURN_KP 20.0
+#define TURN_KP 30.0
 #define TURN_KI 0.0
 #define TURN_KD 0.0
 #define TURN_DT 0.00181

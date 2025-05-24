@@ -6,7 +6,7 @@ Drivetrain::Drivetrain(AccelStepper* y_stepper1, AccelStepper* y_stepper2, Qwiic
     y_stepper2(*y_stepper2),
     myOtos(myOtos) {
         pid.EnableContinuousInput(-180, 180);
-        pid.SetTolerance(0.05, 0.05);
+        pid.SetTolerance(0.1, 0.1);
     }
 
 void Drivetrain::stepperSleep() {
