@@ -44,9 +44,9 @@ unsigned long debounceDelay = 50;
 int dx[4] = {0, 1, 0, -1};
 int dy[4] = {1, 0, -1, 0};
 
-int extra_time = 0;
-int predicted_time = 0;
-int target_time = 0;
+double extra_time = 0;
+double predicted_time = 0;
+double target_time = 0;
 
 AccelStepper y_stepper1 = AccelStepper(motorInterfaceType, Y1_STEP, 2);
 AccelStepper y_stepper2 = AccelStepper(motorInterfaceType, Y2_STEP, 2);
@@ -248,41 +248,56 @@ void run() {
       lct++;
     }
   }
-  predicted_time = 1238 + 1375 * (tct - 1) + 1061 * rct + 1062 * lct + cct * 300;
-  extra_time = max(target_time - predicted_time, 0); // change to 0 if less
+
+  // CHANGE THIS FOR END PATH INSTRUCTIONS
+
+  path.push_back("t10");
+  path.push_back("l");
+  path.push_back("c");
+  path.push_back("p24");
+
+  // predicted_time = 1238 + 1375 * (tct - 1) + 1061 * rct + 1062 * lct + cct * 300;
+  predicted_time = 1238 + 1375 * (tct - 1) + 1061 * rct + 1062 * lct + cct * 300; // For Fast Turns
+  extra_time = max(target_time - predicted_time, 0.0); // change to 0 if less
   int prev = millis();
+  int steps = 0;
   for(std::string &s : path) {
     if(s[0] == 't') {
       drivetrain.driveDistance(std::stod(s.substr(1)), false);
-      if(tct == 0) {
-        // predicted_time -= 1238;
+      if(steps == 0) {
+        predicted_time -= 1238;
       }
       else {
-        // predicted_time -= 1375;
+        predicted_time -= 1375;
       }
-      // tct++;
     }
     else if(s[0] == 'c') {
       drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 17 + 1.75, false); // remember to add offset from half of the wood block; measure it
-      // predicted_time -= 300;
+      predicted_time -= 300;
     }
     else if(s[0] == 'r') {
       drivetrain.turnRight();
-      // predicted_time -= 1601;
+      predicted_time -= 1061;
     }
     else if(s[0] == 'l') {
       drivetrain.turnLeft();
-      // predicted_time -= 1602;
+      predicted_time -= 1061;
     }
     else if(s[0] == 'a') {
       drivetrain.turnAround();
     }
-    delay(extra_time/(int)path.size());
+    else if(s[0] == 'p') {
+      drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - std::stod(s.substr(1)), false);
+      predicted_time -= 300;
+    }
+    double elapsed = millis() - prev;
+    extra_time = max((target_time - elapsed) - predicted_time, 0.0);
+    delay((int)extra_time/(int)path.size());
     ct--;
   }
-  drivetrain.driveDistance(10, false);
-  drivetrain.turnLeft();
-  drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 24, false);
+  // drivetrain.driveDistance(10, false);
+  // drivetrain.turnLeft();
+  // drivetrain.driveDistance(HCSR04.measureDistanceCm()[0] - 24, false);
   // drivetrain.driveDistance(7, false);
   // drivetrain.correctWithGyro(drivetrain.getOrientation(), 24.13);
   // drivetrain.turnLeft();
