@@ -88,15 +88,8 @@ double Drivetrain::getYaw() {
 }
 
 void Drivetrain::turn(int angle, double ROBOTDIAMETER) {
-    int true_angle = angle;
-    if(angle == 90) {
-        true_angle -= 4;
-    }
-    else if(angle == -90) {
-        true_angle += 4;
-    }
-    double full_dist = (stepsPerRev * (ROBOTDIAMETER * PI * (true_angle)/360)/(PI * WHEELDIAMETER));
-    int dist = (int)(stepsPerRev * (ROBOTDIAMETER * PI * (true_angle)/360)/(PI * WHEELDIAMETER));
+    double full_dist = (stepsPerRev * (ROBOTDIAMETER * PI * (angle)/360)/(PI * WHEELDIAMETER));
+    int dist = (int)(stepsPerRev * (ROBOTDIAMETER * PI * (angle)/360)/(PI * WHEELDIAMETER));
     // int microstep_dist = (int)((full_dist - dist) * microstepMultiplier);
 
     digitalWrite(SLEEP1, HIGH);

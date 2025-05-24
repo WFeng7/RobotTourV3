@@ -220,7 +220,7 @@ void setup() {
   extra_time *= 1000;
 
   // END CHANGE
-  target_time += 3000;
+  target_time += 2000;
   // temperature = bno.getTemp();
   PRINTER.println(temperatureRead());
 
@@ -253,11 +253,11 @@ void run() {
 
   path.push_back("t10");
   path.push_back("l");
-  path.push_back("c");
+  // path.push_back("c");
   path.push_back("p24");
 
   // predicted_time = 1238 + 1375 * (tct - 1) + 1061 * rct + 1062 * lct + cct * 300;
-  predicted_time = 1238 + 1375 * (tct - 1) + 800 * rct + 800 * lct + cct * 300; // For Fast Turns
+  predicted_time = 1238 + 1375 * (tct - 1) + 1400 * rct + 1400 * lct + cct * 300; // For Fast Turns
   extra_time = max(target_time - predicted_time, 0.0); // change to 0 if less
   int prev = millis();
   int steps = 0;
@@ -292,7 +292,7 @@ void run() {
     }
     double elapsed = millis() - prev;
     extra_time = max((target_time - elapsed) - predicted_time, 0.0);
-    delay((int)extra_time/(int)path.size());
+    delay((int)extra_time/ct);
     ct--;
   }
   // drivetrain.driveDistance(10, false);
